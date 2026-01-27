@@ -39,6 +39,7 @@ export interface IStorage {
   getOrders(): Promise<any[]>; // Returns orders with relations
   createOrder(order: InsertOrder, items: InsertOrderItem[]): Promise<Order>;
   updateOrderPayment(id: number, amountPaid: string, paymentStatus: string): Promise<Order>;
+  updateOrderDeliveryStatus(id: number, deliveryStatus: string): Promise<Order>;
   deleteOrder(id: number): Promise<void>;
   
   // Stats
@@ -168,6 +169,14 @@ export class DatabaseStorage implements IStorage {
   async updateOrderPayment(id: number, amountPaid: string, paymentStatus: string): Promise<Order> {
     const [updated] = await db.update(orders)
       .set({ amountPaid, paymentStatus })
+      .where(eq(orders.id, id))
+      .returning();
+    return updated;
+  }
+
+  async updateOrderDeliveryStatus(id: number, deliveryStatus: string): Promise<Order> {
+    const [updated] = await db.update(orders)
+      .set({ deliveryStatus })
       .where(eq(orders.id, id))
       .returning();
     return updated;

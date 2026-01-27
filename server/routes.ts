@@ -187,6 +187,16 @@ export async function registerRoutes(
     res.json(updated);
   });
 
+  // Update order delivery status
+  app.patch("/api/orders/:id/delivery", async (req, res) => {
+    if (!req.isAuthenticated()) return res.sendStatus(401);
+    const { deliveryStatus } = req.body;
+    const orderId = Number(req.params.id);
+    
+    const updated = await storage.updateOrderDeliveryStatus(orderId, deliveryStatus);
+    res.json(updated);
+  });
+
   // Delete order
   app.delete(api.orders.delete.path, async (req, res) => {
     if (!req.isAuthenticated()) return res.sendStatus(401);

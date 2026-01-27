@@ -88,11 +88,35 @@ export function useOrders() {
     },
   });
 
+  const updateDeliveryStatus = useMutation({
+    mutationFn: async ({ orderId, deliveryStatus }: { orderId: number; deliveryStatus: string }) => {
+      const res = await fetch(`/api/orders/${orderId}/delivery`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ deliveryStatus }),
+        credentials: "include",
+      });
+      if (!res.ok) {
+        const error = await res.json();
+        throw new Error(error.message || "Failed to update delivery status");
+      }
+      return res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [api.orders.list.path] });
+      toast({ title: "Delivery Updated", description: "Delivery status has been updated successfully." });
+    },
+    onError: (error) => {
+      toast({ variant: "destructive", title: "Update Failed", description: error.message });
+    },
+  });
+
   return {
     orders: ordersQuery.data || [],
     isLoading: ordersQuery.isLoading,
     createOrder,
     updatePayment,
+    updateDeliveryStatus,
     deleteOrder,
   };
 }
