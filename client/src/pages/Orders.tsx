@@ -23,7 +23,7 @@ import {
 } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { OrderForm } from "@/components/forms/OrderForm";
-import { Plus, Clock, CheckCircle, Truck, FileText, CreditCard, AlertCircle, Trash2 } from "lucide-react";
+import { Plus, Clock, CheckCircle, Truck, FileText, CreditCard, AlertCircle, Trash2, PackageCheck } from "lucide-react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -38,7 +38,7 @@ import {
 import { format } from "date-fns";
 
 export default function Orders() {
-  const { orders, isLoading, createOrder, updatePayment, deleteOrder } = useOrders();
+  const { orders, isLoading, createOrder, updatePayment, updateDeliveryStatus, deleteOrder } = useOrders();
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [paymentOrder, setPaymentOrder] = useState<any>(null);
   const [paymentAmount, setPaymentAmount] = useState("");
@@ -58,6 +58,13 @@ export default function Orders() {
     setPaymentAmount("");
   };
 
+  const handleDeliveryStatusUpdate = async (orderId: number, status: string) => {
+    await updateDeliveryStatus.mutateAsync({
+      orderId,
+      deliveryStatus: status
+    });
+  };
+
   const openPaymentDialog = (order: any) => {
     setPaymentOrder(order);
     setPaymentAmount(order.amountPaid || "0");
@@ -73,6 +80,35 @@ export default function Orders() {
         return <Badge variant="outline" className="text-amber-500 border-amber-200 bg-amber-50"><Clock className="w-3 h-3 mr-1" /> Pending</Badge>;
       default:
         return <Badge variant="secondary">{status}</Badge>;
+    }
+  };
+
+  const getDeliveryBadge = (status: string) => {
+    switch (status?.toLowerCase()) {
+      case 'delivered':
+        return (
+          <Badge className="bg-emerald-500 hover:bg-emerald-600">
+            <PackageCheck className="w-3 h-3 mr-1" /> Delivered
+          </Badge>
+        );
+      case 'pending':
+        return (
+          <Badge variant="outline" className="text-amber-500 border-amber-200 bg-amber-50">
+            <Truck className="w-3 h-3 mr-1" /> Pending
+          </Badge>
+        );
+      case 'in-transit':
+        return (
+          <Badge variant="outline" className="text-blue-500 border-blue-200 bg-blue-50">
+            <Truck className="w-3 h-3 mr-1" /> In Transit
+          </Badge>
+        );
+      default:
+        return (
+          <Badge variant="secondary">
+            <Truck className="w-3 h-3 mr-1" /> {status || 'Pending'}
+          </Badge>
+        );
     }
   };
 
@@ -161,10 +197,7 @@ export default function Orders() {
                   </TableCell>
                   <TableCell>{getStatusBadge(order.paymentStatus)}</TableCell>
                   <TableCell>
-                    <div className="flex items-center text-slate-600 text-sm">
-                      <Truck className="w-3 h-3 mr-1" />
-                      {order.deliveryStatus}
-                    </div>
+                    {getDeliveryBadge(order.deliveryStatus)}
                   </TableCell>
                   <TableCell>
                     <div className="flex items-center gap-2">
@@ -178,6 +211,20 @@ export default function Orders() {
                         <CreditCard className="w-3 h-3 mr-1" />
                         {order.paymentStatus === 'paid' ? 'Paid' : 'Record Payment'}
                       </Button>
+                      
+                      {order.deliveryStatus?.toLowerCase() !== 'delivered' && (
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => handleDeliveryStatusUpdate(order.id, 'delivered')}
+                          className="text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50"
+                          data-testid={`button-deliver-${order.id}`}
+                        >
+                          <PackageCheck className="w-3 h-3 mr-1" />
+                          Mark Delivered
+                        </Button>
+                      )}
+                      
                       <AlertDialog>
                         <AlertDialogTrigger asChild>
                           <Button
