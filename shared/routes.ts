@@ -156,6 +156,8 @@ export const api = {
       path: '/api/orders',
       input: z.object({
         customerId: z.number(),
+        poNo: z.string().optional(),
+        poDate: z.string().optional(),
         items: z.array(z.object({
           machineId: z.number(),
           quantity: z.number(),

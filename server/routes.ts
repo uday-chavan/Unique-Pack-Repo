@@ -135,7 +135,7 @@ export async function registerRoutes(
 
   app.post(api.orders.create.path, async (req, res) => {
     if (!req.isAuthenticated()) return res.sendStatus(401);
-    const { customerId, items } = req.body;
+    const { customerId, items, poNo, poDate } = req.body;
     
     // Calculate total
     let total = 0;
@@ -156,6 +156,8 @@ export async function registerRoutes(
       totalAmount: total.toString(),
       paymentStatus: 'pending',
       deliveryStatus: 'pending',
+      poNo,
+      poDate: poDate ? new Date(poDate) : null,
       createdBy: req.user!.id
     }, orderItemsWithPrices);
 

@@ -108,19 +108,34 @@ export function CustomerForm({ onSubmit, isLoading, defaultValues }: CustomerFor
           )}
         />
 
-        <FormField
-          control={form.control}
-          name="taxId"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>GST / Tax ID</FormLabel>
-              <FormControl>
-                <Input placeholder="GSTIN" {...field} value={field.value || ""} data-testid="input-customer-taxid" />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+        <div className="grid grid-cols-2 gap-4">
+          <FormField
+            control={form.control}
+            name="taxId"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Tax ID</FormLabel>
+                <FormControl>
+                  <Input placeholder="Tax ID" {...field} value={field.value || ""} data-testid="input-customer-taxid" />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="gstin"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>GSTIN</FormLabel>
+                <FormControl>
+                  <Input placeholder="GSTIN" {...field} value={field.value || ""} data-testid="input-customer-gstin" />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
 
         <div className="flex justify-end pt-4">
           <Button type="submit" disabled={isLoading} className="bg-blue-600 hover:bg-blue-700" data-testid="button-save-customer">

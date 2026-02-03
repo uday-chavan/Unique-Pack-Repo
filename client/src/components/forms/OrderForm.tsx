@@ -35,6 +35,8 @@ import { useState } from "react";
 // Matches API input requirement
 const createOrderSchema = z.object({
   customerId: z.coerce.number().min(1, "Customer is required"),
+  poNo: z.string().optional(),
+  poDate: z.string().optional(),
   items: z.array(z.object({
     machineId: z.coerce.number().min(1, "Machine is required"),
     quantity: z.coerce.number().min(1, "Quantity must be at least 1"),
@@ -117,6 +119,35 @@ export function OrderForm({ onSubmit, isLoading }: OrderFormProps) {
               </FormItem>
             )}
           />
+
+          <div className="grid grid-cols-2 gap-4">
+            <FormField
+              control={form.control}
+              name="poNo"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>PO Number</FormLabel>
+                  <FormControl>
+                    <Input placeholder="PO/XXX/202X/XXX" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="poDate"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>PO Date</FormLabel>
+                  <FormControl>
+                    <Input type="date" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
 
           <div className="space-y-4">
             <div className="flex items-center justify-between">

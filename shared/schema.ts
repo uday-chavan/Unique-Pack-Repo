@@ -32,6 +32,7 @@ export const customers = pgTable("customers", {
   email: text("email"),
   address: text("address"),
   taxId: text("tax_id"),
+  gstin: text("gstin"), // Added for invoice
   createdAt: timestamp("created_at").defaultNow(),
 });
 
@@ -41,6 +42,7 @@ export const machines = pgTable("machines", {
   category: text("category").notNull(), // Lathe, Drill, CNC, etc.
   brand: text("brand"),
   model: text("model"),
+  hsnCode: text("hsn_code"), // Added for invoice
   serialNumber: text("serial_number"),
   purchasePrice: decimal("purchase_price").notNull(),
   sellingPrice: decimal("selling_price").notNull(),
@@ -60,6 +62,9 @@ export const orders = pgTable("orders", {
   amountPaid: decimal("amount_paid").default("0"),
   paymentStatus: text("payment_status").default("pending"), // pending, paid, partial
   deliveryStatus: text("delivery_status").default("pending"), // pending, shipped, delivered
+  invoiceNo: text("invoice_no"), // Added for invoice
+  poNo: text("po_no"), // Added for invoice
+  poDate: timestamp("po_date"), // Added for invoice
   createdBy: integer("created_by").references(() => users.id),
   createdAt: timestamp("created_at").defaultNow(),
 });
