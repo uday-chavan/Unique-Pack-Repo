@@ -104,7 +104,7 @@ export function MachineForm({ onSubmit, isLoading, defaultValues }: MachineFormP
             name="name"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Machine Name</FormLabel>
+                <FormLabel>Item Name</FormLabel>
                 <FormControl>
                   <Input placeholder="CNC Lathe X200" {...field} />
                 </FormControl>
@@ -290,7 +290,7 @@ export function MachineForm({ onSubmit, isLoading, defaultValues }: MachineFormP
         </div>
 
         <Button type="submit" className="w-full" disabled={isLoading}>
-          {isLoading ? "Saving..." : "Save Machine"}
+          {isLoading ? "Saving..." : "Save Item"}
         </Button>
       </form>
     </Form>

@@ -66,14 +66,14 @@ export default function Inventory() {
           <DialogTrigger asChild>
             <Button className="bg-blue-600 hover:bg-blue-700 shadow-md shadow-blue-900/10">
               <Plus className="w-4 h-4 mr-2" />
-              Add Machine
+              Add Item
             </Button>
           </DialogTrigger>
           <DialogContent className="sm:max-w-[600px]">
             <DialogHeader>
-              <DialogTitle>Add New Machine</DialogTitle>
+              <DialogTitle>Add New Machine / Item</DialogTitle>
               <DialogDescription>
-                Enter the details of the new machine to add to inventory.
+                Enter the details of the new machine OR item to add to inventory.
               </DialogDescription>
             </DialogHeader>
             <MachineForm onSubmit={handleCreate} isLoading={createMachine.isPending} />

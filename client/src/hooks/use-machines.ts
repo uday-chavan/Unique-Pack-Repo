@@ -56,7 +56,7 @@ export function useMachines() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [api.machines.list.path] });
-      toast({ title: "Success", description: "Machine updated successfully" });
+      toast({ title: "Success", description: "Inventory updated successfully" });
     },
   });
 
