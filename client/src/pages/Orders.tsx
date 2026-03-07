@@ -57,6 +57,7 @@ export default function Orders() {
   const [selectedOrderForEWayBill, setSelectedOrderForEWayBill] = useState<any>(null);
   const [orderToDelete, setOrderToDelete] = useState<any>(null);
   const [invoiceDetails, setInvoiceDetails] = useState<any>({});
+  const [eWayBillDetails, setEWayBillDetails] = useState<any>({});
   const [isInvoiceEditMode, setIsInvoiceEditMode] = useState(false);
   const [isEWayBillEditMode, setIsEWayBillEditMode] = useState(false);
   const invoiceRef = useRef<HTMLDivElement>(null);
@@ -64,6 +65,10 @@ export default function Orders() {
 
   const handleInvoiceDetailsChange = (field: string, value: any) => {
     setInvoiceDetails(prev => ({ ...prev, [field]: value }));
+  };
+
+  const handleEWayBillDetailsChange = (field: string, value: any) => {
+    setEWayBillDetails(prev => ({ ...prev, [field]: value }));
   };
 
   const handleCreate = async (data: any) => {
@@ -95,7 +100,7 @@ export default function Orders() {
     pdf.save(`EWayBill_${selectedOrderForEWayBill.id}.pdf`);
   };
 
-  const renderEWayBillHTML = (order: any) => {
+  const renderEWayBillHTML = (order: any, details: any = {}) => {
     const billNo = String(order?.id * 1000 + 2221).padEnd(13, '0');
     const createdDate = order?.createdAt ? new Date(order.createdAt) : new Date();
     const validUntil = new Date(createdDate.getTime() + 48*60*60*1000);
@@ -130,7 +135,7 @@ export default function Orders() {
               </tr>
               <tr style="border-bottom: 1px solid #ccc;">
                 <td style="font-weight: bold; width: 160px; padding: 8px;">Place of Dispatch</td>
-                <td style="padding: 8px;">Shrirampur, MAHARASHTRA-423603</td>
+                <td style="padding: 8px;">${details.placeOfDispatch || "Shrirampur, MAHARASHTRA-423603"}</td>
               </tr>
               <tr style="border-bottom: 1px solid #ccc;">
                 <td style="font-weight: bold; width: 160px; padding: 8px;">GSTIN of Recipient</td>
@@ -142,7 +147,7 @@ export default function Orders() {
               </tr>
               <tr style="border-bottom: 1px solid #ccc;">
                 <td style="font-weight: bold; width: 160px; padding: 8px;">Document No.</td>
-                <td style="padding: 8px;">UP/2025-26/${order?.id?.toString().padStart(4, "0")}</td>
+                <td style="padding: 8px;">${details.documentNo || `UP/2025-26/${order?.id?.toString().padStart(4, "0")}`}</td>
               </tr>
               <tr style="border-bottom: 1px solid #ccc;">
                 <td style="font-weight: bold; width: 160px; padding: 8px;">Document Date</td>
@@ -150,7 +155,7 @@ export default function Orders() {
               </tr>
               <tr style="border-bottom: 1px solid #ccc;">
                 <td style="font-weight: bold; width: 160px; padding: 8px;">Transaction Type</td>
-                <td style="padding: 8px;">Regular</td>
+                <td style="padding: 8px;">${details.transactionType || "Regular"}</td>
               </tr>
               <tr style="border-bottom: 1px solid #ccc;">
                 <td style="font-weight: bold; width: 160px; padding: 8px;">Value of Goods</td>
@@ -158,11 +163,11 @@ export default function Orders() {
               </tr>
               <tr style="border-bottom: 1px solid #ccc;">
                 <td style="font-weight: bold; width: 160px; padding: 8px;">HSN Code</td>
-                <td style="padding: 8px;">8422 - PACKING MACHINE</td>
+                <td style="padding: 8px;">${details.hsnCode || "8422"} - PACKING MACHINE</td>
               </tr>
               <tr>
                 <td style="font-weight: bold; width: 160px; padding: 8px;">Reason for Transportation</td>
-                <td style="padding: 8px;">Outward - Supply</td>
+                <td style="padding: 8px;">${details.transportationReason || "Outward - Supply"}</td>
               </tr>
             </tbody>
           </table>
@@ -183,10 +188,10 @@ export default function Orders() {
             </thead>
             <tbody>
               <tr style="border: 1px solid #999;">
-                <td style="border: 1px solid #999; padding: 8px;">Road - MH09CU6678</td>
-                <td style="border: 1px solid #999; padding: 8px;">Shrirampur</td>
+                <td style="border: 1px solid #999; padding: 8px;">${details.transportMode || "Road"} - ${details.vehicleNo || "MH09CU6678"}</td>
+                <td style="border: 1px solid #999; padding: 8px;">${details.fromLocation || "Shrirampur"}</td>
                 <td style="border: 1px solid #999; padding: 8px;">${createdDate.toLocaleDateString('en-IN')} ${createdDate.toLocaleTimeString('en-IN')}</td>
-                <td style="border: 1px solid #999; padding: 8px;">27AGJPJ6286A1ZD</td>
+                <td style="border: 1px solid #999; padding: 8px;">${details.enteredBy || "27AGJPJ6286A1ZD"}</td>
                 <td style="border: 1px solid #999; padding: 8px;">-</td>
                 <td style="border: 1px solid #999; padding: 8px;">1</td>
               </tr>
@@ -551,22 +556,46 @@ export default function Orders() {
           </div>
 
           {isEWayBillEditMode && (
-            <div className="grid grid-cols-2 gap-4 text-xs mb-4 max-h-64 overflow-y-auto border rounded p-4 bg-slate-50">
+            <div className="grid grid-cols-2 gap-4 text-xs mb-4 max-h-80 overflow-y-auto border rounded p-4 bg-slate-50">
               <div>
                 <Label>Vehicle No</Label>
-                <Input defaultValue="MH09CU6678" placeholder="Vehicle Number" />
+                <Input value={eWayBillDetails.vehicleNo || ""} onChange={(e) => handleEWayBillDetailsChange("vehicleNo", e.target.value)} defaultValue="MH09CU6678" placeholder="Vehicle Number" />
               </div>
               <div>
                 <Label>Transporter GSTIN</Label>
-                <Input placeholder="Transporter GSTIN" />
+                <Input value={eWayBillDetails.transporterGstin || ""} onChange={(e) => handleEWayBillDetailsChange("transporterGstin", e.target.value)} placeholder="Transporter GSTIN" />
               </div>
               <div>
                 <Label>Transport Mode</Label>
-                <Input defaultValue="Road" placeholder="Road" />
+                <Input value={eWayBillDetails.transportMode || ""} onChange={(e) => handleEWayBillDetailsChange("transportMode", e.target.value)} defaultValue="Road" placeholder="Road" />
               </div>
               <div>
                 <Label>HSN Code</Label>
-                <Input defaultValue="8422" placeholder="HSN Code" />
+                <Input value={eWayBillDetails.hsnCode || ""} onChange={(e) => handleEWayBillDetailsChange("hsnCode", e.target.value)} defaultValue="8422" placeholder="HSN Code" />
+              </div>
+              <div>
+                <Label>Place of Dispatch</Label>
+                <Input value={eWayBillDetails.placeOfDispatch || ""} onChange={(e) => handleEWayBillDetailsChange("placeOfDispatch", e.target.value)} defaultValue="Shrirampur, MAHARASHTRA-423603" placeholder="Place of Dispatch" />
+              </div>
+              <div>
+                <Label>Document No</Label>
+                <Input value={eWayBillDetails.documentNo || ""} onChange={(e) => handleEWayBillDetailsChange("documentNo", e.target.value)} placeholder="Document Number" />
+              </div>
+              <div>
+                <Label>Transaction Type</Label>
+                <Input value={eWayBillDetails.transactionType || ""} onChange={(e) => handleEWayBillDetailsChange("transactionType", e.target.value)} defaultValue="Regular" placeholder="Regular" />
+              </div>
+              <div>
+                <Label>Reason for Transportation</Label>
+                <Input value={eWayBillDetails.transportationReason || ""} onChange={(e) => handleEWayBillDetailsChange("transportationReason", e.target.value)} defaultValue="Outward - Supply" placeholder="Outward - Supply" />
+              </div>
+              <div>
+                <Label>From Location</Label>
+                <Input value={eWayBillDetails.fromLocation || ""} onChange={(e) => handleEWayBillDetailsChange("fromLocation", e.target.value)} defaultValue="Shrirampur" placeholder="From Location" />
+              </div>
+              <div>
+                <Label>Entered By (GSTIN)</Label>
+                <Input value={eWayBillDetails.enteredBy || ""} onChange={(e) => handleEWayBillDetailsChange("enteredBy", e.target.value)} defaultValue="27AGJPJ6286A1ZD" placeholder="GSTIN" />
               </div>
             </div>
           )}
@@ -581,7 +610,7 @@ export default function Orders() {
                 margin: "0 auto",
                 boxSizing: "border-box",
               }}
-              dangerouslySetInnerHTML={{ __html: renderEWayBillHTML(selectedOrderForEWayBill) }}
+              dangerouslySetInnerHTML={{ __html: renderEWayBillHTML(selectedOrderForEWayBill, eWayBillDetails) }}
             ></div>
           </div>
 
