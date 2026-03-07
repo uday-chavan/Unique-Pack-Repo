@@ -536,6 +536,7 @@ export default function Orders() {
           if (!open) {
             setSelectedOrderForEWayBill(null);
             setIsEWayBillEditMode(false);
+            setEWayBillDetails({});
           }
         }}
       >
@@ -618,6 +619,7 @@ export default function Orders() {
             <Button variant="outline" onClick={() => {
               setSelectedOrderForEWayBill(null);
               setIsEWayBillEditMode(false);
+              setEWayBillDetails({});
             }}>
               Close
             </Button>
