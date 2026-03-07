@@ -32,7 +32,7 @@ import { Badge } from "@/components/ui/badge";
 import { OrderForm } from "@/components/forms/OrderForm";
 import {
   Plus, Clock, CheckCircle, Truck, FileText, CreditCard,
-  AlertCircle, Trash2, PackageCheck, Download, MoreHorizontal
+  AlertCircle, Trash2, PackageCheck, Download, MoreHorizontal, Pencil
 } from "lucide-react";
 import {
   AlertDialog,
@@ -57,6 +57,8 @@ export default function Orders() {
   const [selectedOrderForEWayBill, setSelectedOrderForEWayBill] = useState<any>(null);
   const [orderToDelete, setOrderToDelete] = useState<any>(null);
   const [invoiceDetails, setInvoiceDetails] = useState<any>({});
+  const [isInvoiceEditMode, setIsInvoiceEditMode] = useState(false);
+  const [isEWayBillEditMode, setIsEWayBillEditMode] = useState(false);
   const invoiceRef = useRef<HTMLDivElement>(null);
   const eWayBillRef = useRef<HTMLDivElement>(null);
 
@@ -525,13 +527,49 @@ export default function Orders() {
       {/* e-Way Bill Dialog */}
       <Dialog
         open={!!selectedOrderForEWayBill}
-        onOpenChange={(open) => !open && setSelectedOrderForEWayBill(null)}
+        onOpenChange={(open) => {
+          if (!open) {
+            setSelectedOrderForEWayBill(null);
+            setIsEWayBillEditMode(false);
+          }
+        }}
       >
         <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto overflow-x-hidden">
-          <DialogHeader>
-            <DialogTitle>e-Way Bill Preview</DialogTitle>
-            <DialogDescription>Preview and download e-Way bill.</DialogDescription>
-          </DialogHeader>
+          <div className="flex items-center justify-between">
+            <div>
+              <DialogTitle>e-Way Bill Preview</DialogTitle>
+              <DialogDescription>Preview and download e-Way bill.</DialogDescription>
+            </div>
+            <Button
+              size="sm"
+              variant="ghost"
+              onClick={() => setIsEWayBillEditMode(!isEWayBillEditMode)}
+              className="h-8 w-8 p-0"
+            >
+              <Pencil className="w-4 h-4" />
+            </Button>
+          </div>
+
+          {isEWayBillEditMode && (
+            <div className="grid grid-cols-2 gap-4 text-xs mb-4 max-h-64 overflow-y-auto border rounded p-4 bg-slate-50">
+              <div>
+                <Label>Vehicle No</Label>
+                <Input defaultValue="MH09CU6678" placeholder="Vehicle Number" />
+              </div>
+              <div>
+                <Label>Transporter GSTIN</Label>
+                <Input placeholder="Transporter GSTIN" />
+              </div>
+              <div>
+                <Label>Transport Mode</Label>
+                <Input defaultValue="Road" placeholder="Road" />
+              </div>
+              <div>
+                <Label>HSN Code</Label>
+                <Input defaultValue="8422" placeholder="HSN Code" />
+              </div>
+            </div>
+          )}
 
           <div className="overflow-x-hidden w-full">
             <div
@@ -548,7 +586,10 @@ export default function Orders() {
           </div>
 
           <DialogFooter>
-            <Button variant="outline" onClick={() => setSelectedOrderForEWayBill(null)}>
+            <Button variant="outline" onClick={() => {
+              setSelectedOrderForEWayBill(null);
+              setIsEWayBillEditMode(false);
+            }}>
               Close
             </Button>
             <Button onClick={downloadEWayBill} className="bg-green-600 hover:bg-green-700">
@@ -565,65 +606,78 @@ export default function Orders() {
           if (!open) {
             setSelectedOrderForInvoice(null);
             setInvoiceDetails({});
+            setIsInvoiceEditMode(false);
           }
         }}
       >
         <DialogContent className="max-w-6xl max-h-[95vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>Tax Invoice - Edit & Download</DialogTitle>
-            <DialogDescription>Fill in invoice details and download PDF</DialogDescription>
-          </DialogHeader>
-
-          <div className="grid grid-cols-2 gap-4 text-xs mb-4 max-h-64 overflow-y-auto">
+          <div className="flex items-center justify-between">
             <div>
-              <Label>Invoice No</Label>
-              <Input value={invoiceDetails.invoiceNo || ""} onChange={(e) => handleInvoiceDetailsChange("invoiceNo", e.target.value)} placeholder="UP/2025-26/0001" />
+              <DialogTitle>Tax Invoice</DialogTitle>
+              <DialogDescription>View and download invoice</DialogDescription>
             </div>
-            <div>
-              <Label>PO Number</Label>
-              <Input value={invoiceDetails.poNo || ""} onChange={(e) => handleInvoiceDetailsChange("poNo", e.target.value)} placeholder="PO Number" />
-            </div>
-            <div>
-              <Label>DC Number</Label>
-              <Input value={invoiceDetails.dcNo || ""} onChange={(e) => handleInvoiceDetailsChange("dcNo", e.target.value)} placeholder="DC Number" />
-            </div>
-            <div>
-              <Label>E-Way Bill No</Label>
-              <Input value={invoiceDetails.eWayBillNo || ""} onChange={(e) => handleInvoiceDetailsChange("eWayBillNo", e.target.value)} placeholder="E-Way Bill No" />
-            </div>
-            <div>
-              <Label>Discount %</Label>
-              <Input type="number" value={invoiceDetails.discountPercent || ""} onChange={(e) => handleInvoiceDetailsChange("discountPercent", e.target.value)} placeholder="0" />
-            </div>
-            <div>
-              <Label>Bank Name</Label>
-              <Input value={invoiceDetails.bankName || ""} onChange={(e) => handleInvoiceDetailsChange("bankName", e.target.value)} placeholder="Bank of Baroda" />
-            </div>
-            <div>
-              <Label>Bank Branch</Label>
-              <Input value={invoiceDetails.bankBranch || ""} onChange={(e) => handleInvoiceDetailsChange("bankBranch", e.target.value)} placeholder="Kopargaon" />
-            </div>
-            <div>
-              <Label>Account No</Label>
-              <Input value={invoiceDetails.accountNo || ""} onChange={(e) => handleInvoiceDetailsChange("accountNo", e.target.value)} placeholder="Account Number" />
-            </div>
-            <div>
-              <Label>IFSC Code</Label>
-              <Input value={invoiceDetails.ifscCode || ""} onChange={(e) => handleInvoiceDetailsChange("ifscCode", e.target.value)} placeholder="IFSC Code" />
-            </div>
-            <div>
-              <Label>Mode of Transport</Label>
-              <Input value={invoiceDetails.modeOfTransport || "Road"} onChange={(e) => handleInvoiceDetailsChange("modeOfTransport", e.target.value)} placeholder="Road" />
-            </div>
-            <div>
-              <Label>Dispatched From</Label>
-              <Input value={invoiceDetails.dispatchedFrom || "Kopargaon"} onChange={(e) => handleInvoiceDetailsChange("dispatchedFrom", e.target.value)} placeholder="Kopargaon" />
-            </div>
-            <div>
-              <Label>Place of Supply</Label>
-              <Input value={invoiceDetails.placeOfSupply || "Kopargaon"} onChange={(e) => handleInvoiceDetailsChange("placeOfSupply", e.target.value)} placeholder="Kopargaon" />
-            </div>
+            <Button
+              size="sm"
+              variant="ghost"
+              onClick={() => setIsInvoiceEditMode(!isInvoiceEditMode)}
+              className="h-8 w-8 p-0"
+            >
+              <Pencil className="w-4 h-4" />
+            </Button>
           </div>
+
+          {isInvoiceEditMode && (
+            <div className="grid grid-cols-2 gap-4 text-xs mb-4 max-h-64 overflow-y-auto border rounded p-4 bg-slate-50">
+              <div>
+                <Label>Invoice No</Label>
+                <Input value={invoiceDetails.invoiceNo || ""} onChange={(e) => handleInvoiceDetailsChange("invoiceNo", e.target.value)} placeholder="UP/2025-26/0001" />
+              </div>
+              <div>
+                <Label>PO Number</Label>
+                <Input value={invoiceDetails.poNo || ""} onChange={(e) => handleInvoiceDetailsChange("poNo", e.target.value)} placeholder="PO Number" />
+              </div>
+              <div>
+                <Label>DC Number</Label>
+                <Input value={invoiceDetails.dcNo || ""} onChange={(e) => handleInvoiceDetailsChange("dcNo", e.target.value)} placeholder="DC Number" />
+              </div>
+              <div>
+                <Label>E-Way Bill No</Label>
+                <Input value={invoiceDetails.eWayBillNo || ""} onChange={(e) => handleInvoiceDetailsChange("eWayBillNo", e.target.value)} placeholder="E-Way Bill No" />
+              </div>
+              <div>
+                <Label>Discount %</Label>
+                <Input type="number" value={invoiceDetails.discountPercent || ""} onChange={(e) => handleInvoiceDetailsChange("discountPercent", e.target.value)} placeholder="0" />
+              </div>
+              <div>
+                <Label>Bank Name</Label>
+                <Input value={invoiceDetails.bankName || ""} onChange={(e) => handleInvoiceDetailsChange("bankName", e.target.value)} placeholder="Bank of Baroda" />
+              </div>
+              <div>
+                <Label>Bank Branch</Label>
+                <Input value={invoiceDetails.bankBranch || ""} onChange={(e) => handleInvoiceDetailsChange("bankBranch", e.target.value)} placeholder="Kopargaon" />
+              </div>
+              <div>
+                <Label>Account No</Label>
+                <Input value={invoiceDetails.accountNo || ""} onChange={(e) => handleInvoiceDetailsChange("accountNo", e.target.value)} placeholder="Account Number" />
+              </div>
+              <div>
+                <Label>IFSC Code</Label>
+                <Input value={invoiceDetails.ifscCode || ""} onChange={(e) => handleInvoiceDetailsChange("ifscCode", e.target.value)} placeholder="IFSC Code" />
+              </div>
+              <div>
+                <Label>Mode of Transport</Label>
+                <Input value={invoiceDetails.modeOfTransport || "Road"} onChange={(e) => handleInvoiceDetailsChange("modeOfTransport", e.target.value)} placeholder="Road" />
+              </div>
+              <div>
+                <Label>Dispatched From</Label>
+                <Input value={invoiceDetails.dispatchedFrom || "Kopargaon"} onChange={(e) => handleInvoiceDetailsChange("dispatchedFrom", e.target.value)} placeholder="Kopargaon" />
+              </div>
+              <div>
+                <Label>Place of Supply</Label>
+                <Input value={invoiceDetails.placeOfSupply || "Kopargaon"} onChange={(e) => handleInvoiceDetailsChange("placeOfSupply", e.target.value)} placeholder="Kopargaon" />
+              </div>
+            </div>
+          )}
 
           <div className="overflow-x-hidden w-full mt-4 border-t pt-4">
             <div
@@ -777,7 +831,11 @@ export default function Orders() {
           </div>
 
           <DialogFooter>
-            <Button variant="outline" onClick={() => {setSelectedOrderForInvoice(null); setInvoiceDetails({});}}>
+            <Button variant="outline" onClick={() => {
+              setSelectedOrderForInvoice(null);
+              setInvoiceDetails({});
+              setIsInvoiceEditMode(false);
+            }}>
               Close
             </Button>
             <Button onClick={downloadInvoice} className="bg-blue-600 hover:bg-blue-700">
