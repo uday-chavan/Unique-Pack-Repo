@@ -29,6 +29,7 @@ Preferred communication style: Simple, everyday language.
 - **Schema**: Defined in shared/schema.ts with tables for users, machines, suppliers, customers, orders, order_items, transactions, and purchases
 - **Validation**: Drizzle-zod generates insert schemas from table definitions
 - **Migrations**: Managed via drizzle-kit with `db:push` command
+- **e-Way Bill Fields**: Suppliers now include gstin, state, and city fields for GST compliance and e-Way bill generation
 
 ### Code Organization
 - `client/src/` - React frontend application
@@ -62,6 +63,15 @@ Preferred communication style: Simple, everyday language.
 - **@radix-ui/***: Accessible UI primitives (dialogs, dropdowns, forms, etc.)
 - **recharts**: Dashboard charts and data visualization
 - **date-fns**: Date formatting throughout the application
+
+### PDF Generation & Documents
+- **Invoice Generation**: Orders page generates tax invoices with GST details, line items, and payment terms using html2canvas and jsPDF
+- **e-Way Bill Generation**: Alongside invoices, the system now generates GST e-Way bills with:
+  - E-Way Bill No (generated from order ID)
+  - Valid dates (auto-calculated as 48-hour validity)
+  - Part A: Supplier, Customer, and shipment details
+  - Part B: Vehicle/transport information
+  - Both documents are downloadable as separate PDF files from the order view
 
 ### Required Environment Variables
 - `DATABASE_URL`: PostgreSQL connection string (required)

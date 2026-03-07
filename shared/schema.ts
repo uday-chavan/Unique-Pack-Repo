@@ -21,6 +21,9 @@ export const suppliers = pgTable("suppliers", {
   phone: text("phone"),
   email: text("email"),
   address: text("address"),
+  gstin: text("gstin"), // Added for e-Way bill
+  state: text("state"), // Added for e-Way bill
+  city: text("city"), // Added for e-Way bill
   active: boolean("active").default(true),
 });
 
