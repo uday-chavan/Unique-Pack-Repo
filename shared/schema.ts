@@ -65,9 +65,22 @@ export const orders = pgTable("orders", {
   amountPaid: decimal("amount_paid").default("0"),
   paymentStatus: text("payment_status").default("pending"), // pending, paid, partial
   deliveryStatus: text("delivery_status").default("pending"), // pending, shipped, delivered
-  invoiceNo: text("invoice_no"), // Added for invoice
-  poNo: text("po_no"), // Added for invoice
-  poDate: timestamp("po_date"), // Added for invoice
+  invoiceNo: text("invoice_no"),
+  poNo: text("po_no"),
+  poDate: timestamp("po_date"),
+  dcNo: text("dc_no"), // Delivery Challan Number
+  discount: decimal("discount").default("0"),
+  discountPercent: decimal("discount_percent").default("0"),
+  bankName: text("bank_name"),
+  bankBranch: text("bank_branch"),
+  accountNo: text("account_no"),
+  ifscCode: text("ifsc_code"),
+  paymentTerms: text("payment_terms"),
+  warrantyPeriod: text("warranty_period"),
+  eWayBillNo: text("eway_bill_no"),
+  modeOfTransport: text("mode_of_transport"),
+  dispatchedFrom: text("dispatched_from"),
+  placeOfSupply: text("place_of_supply"),
   createdBy: integer("created_by").references(() => users.id),
   createdAt: timestamp("created_at").defaultNow(),
 });

@@ -56,8 +56,13 @@ export default function Orders() {
   const [selectedOrderForInvoice, setSelectedOrderForInvoice] = useState<any>(null);
   const [selectedOrderForEWayBill, setSelectedOrderForEWayBill] = useState<any>(null);
   const [orderToDelete, setOrderToDelete] = useState<any>(null);
+  const [invoiceDetails, setInvoiceDetails] = useState<any>({});
   const invoiceRef = useRef<HTMLDivElement>(null);
   const eWayBillRef = useRef<HTMLDivElement>(null);
+
+  const handleInvoiceDetailsChange = (field: string, value: any) => {
+    setInvoiceDetails(prev => ({ ...prev, [field]: value }));
+  };
 
   const handleCreate = async (data: any) => {
     await createOrder.mutateAsync(data);
@@ -553,220 +558,226 @@ export default function Orders() {
         </DialogContent>
       </Dialog>
 
-      {/* Invoice Dialog */}
+      {/* Invoice Dialog with Editable Details */}
       <Dialog
         open={!!selectedOrderForInvoice}
-        onOpenChange={(open) => !open && setSelectedOrderForInvoice(null)}
+        onOpenChange={(open) => {
+          if (!open) {
+            setSelectedOrderForInvoice(null);
+            setInvoiceDetails({});
+          }
+        }}
       >
-        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto overflow-x-hidden">
+        <DialogContent className="max-w-6xl max-h-[95vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>Invoice Preview</DialogTitle>
-            <DialogDescription>Preview and download tax invoice.</DialogDescription>
+            <DialogTitle>Tax Invoice - Edit & Download</DialogTitle>
+            <DialogDescription>Fill in invoice details and download PDF</DialogDescription>
           </DialogHeader>
 
-          <div className="overflow-x-hidden w-full">
+          <div className="grid grid-cols-2 gap-4 text-xs mb-4 max-h-64 overflow-y-auto">
+            <div>
+              <Label>Invoice No</Label>
+              <Input value={invoiceDetails.invoiceNo || ""} onChange={(e) => handleInvoiceDetailsChange("invoiceNo", e.target.value)} placeholder="UP/2025-26/0001" />
+            </div>
+            <div>
+              <Label>PO Number</Label>
+              <Input value={invoiceDetails.poNo || ""} onChange={(e) => handleInvoiceDetailsChange("poNo", e.target.value)} placeholder="PO Number" />
+            </div>
+            <div>
+              <Label>DC Number</Label>
+              <Input value={invoiceDetails.dcNo || ""} onChange={(e) => handleInvoiceDetailsChange("dcNo", e.target.value)} placeholder="DC Number" />
+            </div>
+            <div>
+              <Label>E-Way Bill No</Label>
+              <Input value={invoiceDetails.eWayBillNo || ""} onChange={(e) => handleInvoiceDetailsChange("eWayBillNo", e.target.value)} placeholder="E-Way Bill No" />
+            </div>
+            <div>
+              <Label>Discount %</Label>
+              <Input type="number" value={invoiceDetails.discountPercent || ""} onChange={(e) => handleInvoiceDetailsChange("discountPercent", e.target.value)} placeholder="0" />
+            </div>
+            <div>
+              <Label>Bank Name</Label>
+              <Input value={invoiceDetails.bankName || ""} onChange={(e) => handleInvoiceDetailsChange("bankName", e.target.value)} placeholder="Bank of Baroda" />
+            </div>
+            <div>
+              <Label>Bank Branch</Label>
+              <Input value={invoiceDetails.bankBranch || ""} onChange={(e) => handleInvoiceDetailsChange("bankBranch", e.target.value)} placeholder="Kopargaon" />
+            </div>
+            <div>
+              <Label>Account No</Label>
+              <Input value={invoiceDetails.accountNo || ""} onChange={(e) => handleInvoiceDetailsChange("accountNo", e.target.value)} placeholder="Account Number" />
+            </div>
+            <div>
+              <Label>IFSC Code</Label>
+              <Input value={invoiceDetails.ifscCode || ""} onChange={(e) => handleInvoiceDetailsChange("ifscCode", e.target.value)} placeholder="IFSC Code" />
+            </div>
+            <div>
+              <Label>Mode of Transport</Label>
+              <Input value={invoiceDetails.modeOfTransport || "Road"} onChange={(e) => handleInvoiceDetailsChange("modeOfTransport", e.target.value)} placeholder="Road" />
+            </div>
+            <div>
+              <Label>Dispatched From</Label>
+              <Input value={invoiceDetails.dispatchedFrom || "Kopargaon"} onChange={(e) => handleInvoiceDetailsChange("dispatchedFrom", e.target.value)} placeholder="Kopargaon" />
+            </div>
+            <div>
+              <Label>Place of Supply</Label>
+              <Input value={invoiceDetails.placeOfSupply || "Kopargaon"} onChange={(e) => handleInvoiceDetailsChange("placeOfSupply", e.target.value)} placeholder="Kopargaon" />
+            </div>
+          </div>
+
+          <div className="overflow-x-hidden w-full mt-4 border-t pt-4">
             <div
               ref={invoiceRef}
-              className="bg-white p-8 text-black border shadow-sm font-sans"
+              className="bg-white p-6 text-black border shadow-sm font-sans text-[11px]"
               style={{
                 width: "100%",
                 maxWidth: "210mm",
                 margin: "0 auto",
-                minHeight: "297mm",
                 boxSizing: "border-box",
               }}
             >
-              <div className="border-2 border-black p-4">
-                {/* Header */}
-                <div className="flex justify-between items-start border-b-2 border-black pb-4 mb-4">
+              <div className="border-2 border-black p-3">
+                {/* Header with Company Info */}
+                <div className="flex justify-between items-start border-b-2 border-black pb-3 mb-3">
                   <div>
-                    <h1 className="text-2xl font-bold">Uniq Pack</h1>
-                    <p className="text-xs font-semibold uppercase">Packaging Machine Manufacturers</p>
-                    <div className="mt-4 text-xs">
-                      <p className="font-bold">Regd. Office:</p>
-                      <p>At Post: Shrirampur, Taluka: Shrirampur</p>
-                      <p>Dist: Ahmednagar, Maharashtra - 423603</p>
-                      <p>Mobile: 08048955347</p>
-                      <p>Email: info@uniqpack.com</p>
+                    <h1 className="text-lg font-bold">UNIQ PACK</h1>
+                    <p className="text-[9px] font-semibold">TAX INVOICE</p>
+                    <div className="mt-2 text-[9px] space-y-0.5">
+                      <p><strong>Factory Address:</strong></p>
+                      <p>Industrial Estate, Plot No.A-73, A/P. Shingnapur</p>
+                      <p>Tal. Kopargaon, Dist. Ahmednagar 423 601</p>
+                      <p><strong>Office Address:</strong></p>
+                      <p>A/P. Karanji BK, Tal. Kopargaon, Dist. Ahmednagar 423 603</p>
+                      <p>Mobile: 09423227355, 08329155152</p>
                     </div>
                   </div>
-                  <div className="text-right">
-                    <h2 className="text-xl font-bold border-2 border-black px-4 py-1 inline-block">
-                      TAX INVOICE
-                    </h2>
+                  <div className="text-right text-[9px]">
+                    <p><strong>Company's GSTIN:</strong> 27AGJPJ6286A1ZD</p>
+                    <p><strong>Company's PAN:</strong> AGJPJ6286A</p>
+                    <p><strong>Company's State Code:</strong> 27</p>
                   </div>
                 </div>
 
-                {/* Bill To + Invoice Details */}
-                <div className="grid grid-cols-2 gap-4 border-b-2 border-black pb-4 mb-4">
-                  <div className="text-xs">
-                    <p className="font-bold">
-                      M/s.{" "}
-                      {selectedOrderForInvoice?.customer?.businessName ||
-                        selectedOrderForInvoice?.customer?.name}
-                    </p>
-                    <p>{selectedOrderForInvoice?.customer?.address}</p>
-                    <p className="mt-2 font-bold">
-                      GSTIN:{" "}
-                      {selectedOrderForInvoice?.customer?.gstin ||
-                        selectedOrderForInvoice?.customer?.taxId ||
-                        "N/A"}
-                    </p>
+                {/* Invoice Header Details */}
+                <div className="grid grid-cols-3 gap-3 text-[9px] border-b-2 border-black pb-2 mb-2">
+                  <div>
+                    <p><strong>Invoice No:</strong> {invoiceDetails.invoiceNo || `UP/2025-26/${selectedOrderForInvoice?.id?.toString().padStart(4, "0")}`}</p>
+                    <p><strong>Date:</strong> {selectedOrderForInvoice?.createdAt ? format(new Date(selectedOrderForInvoice.createdAt), "dd/MM/yyyy") : "N/A"}</p>
                   </div>
-                  <div className="text-xs border-l-2 border-black pl-4">
-                    <p>
-                      <span className="font-bold inline-block w-24">Invoice No:</span>{" "}
-                      UP/2025-26/{selectedOrderForInvoice?.id.toString().padStart(4, "0")}
-                    </p>
-                    <p>
-                      <span className="font-bold inline-block w-24">Date:</span>{" "}
-                      {selectedOrderForInvoice?.createdAt &&
-                        format(new Date(selectedOrderForInvoice.createdAt), "dd/MM/yyyy")}
-                    </p>
-                    <p>
-                      <span className="font-bold inline-block w-24">PO No:</span>{" "}
-                      {selectedOrderForInvoice?.poNo || "N/A"}
-                    </p>
-                    <p>
-                      <span className="font-bold inline-block w-24">PO Date:</span>{" "}
-                      {selectedOrderForInvoice?.poDate
-                        ? format(new Date(selectedOrderForInvoice.poDate), "dd/MM/yyyy")
-                        : "N/A"}
-                    </p>
+                  <div>
+                    <p><strong>P.O.No:</strong> {invoiceDetails.poNo || "N/A"}</p>
+                    <p><strong>DC No:</strong> {invoiceDetails.dcNo || "N/A"}</p>
                   </div>
+                  <div className="text-right">
+                    <p><strong>E-Way Bill:</strong> {invoiceDetails.eWayBillNo || "N/A"}</p>
+                    <p><strong>Mode:</strong> {invoiceDetails.modeOfTransport || "Road"}</p>
+                  </div>
+                </div>
+
+                {/* Bill To Section */}
+                <div className="border-b-2 border-black pb-2 mb-2 text-[9px]">
+                  <p><strong>To:</strong></p>
+                  <p><strong>Name:</strong> {selectedOrderForInvoice?.customer?.businessName || selectedOrderForInvoice?.customer?.name}</p>
+                  <p>{selectedOrderForInvoice?.customer?.address}</p>
+                  <p><strong>GST:</strong> {selectedOrderForInvoice?.customer?.gstin || "N/A"}</p>
+                  <p><strong>Dispatched From:</strong> {invoiceDetails.dispatchedFrom || "Kopargaon"}</p>
+                  <p><strong>Place of Supply:</strong> {invoiceDetails.placeOfSupply || "Kopargaon"}</p>
                 </div>
 
                 {/* Items Table */}
-                <table className="w-full text-xs border-collapse mb-4">
+                <table className="w-full text-[9px] border-collapse mb-2">
                   <thead>
-                    <tr className="border-y-2 border-black bg-slate-100">
-                      <th className="border-x-2 border-black p-1 text-center w-12">Sr. No.</th>
-                      <th className="border-x-2 border-black p-1 text-left">Description</th>
-                      <th className="border-x-2 border-black p-1 text-center w-16">HSN</th>
-                      <th className="border-x-2 border-black p-1 text-center w-12">Qty</th>
-                      <th className="border-x-2 border-black p-1 text-center w-12">Unit</th>
-                      <th className="border-x-2 border-black p-1 text-right w-24">Rate (₹)</th>
-                      <th className="border-x-2 border-black p-1 text-right w-28">Taxable Amt (₹)</th>
-                      <th className="border-x-2 border-black p-1 text-center w-16">GST %</th>
+                    <tr className="border-b-2 border-black bg-gray-100">
+                      <th className="border-r border-black p-1 text-center w-8">Sr.No</th>
+                      <th className="border-r border-black p-1 text-center w-12">HSN Code</th>
+                      <th className="border-r border-black p-1 text-left">Description</th>
+                      <th className="border-r border-black p-1 text-center w-12">Qty</th>
+                      <th className="border-r border-black p-1 text-center w-12">Unit</th>
+                      <th className="border-r border-black p-1 text-right w-20">Rate</th>
+                      <th className="border-r border-black p-1 text-right w-20">Amount</th>
                     </tr>
                   </thead>
                   <tbody>
                     {selectedOrderForInvoice?.items?.map((item: any, index: number) => {
                       const rate = Number(item.price);
-                      const taxableAmt = rate * item.quantity;
+                      const amount = rate * item.quantity;
                       return (
                         <tr key={index} className="border-b border-black">
-                          <td className="border-x-2 border-black p-1 text-center">{index + 1}</td>
-                          <td className="border-x-2 border-black p-1">
-                            <p className="font-bold">{item.machine?.name}</p>
-                            <p className="text-[10px] text-slate-600">
-                              Model: {item.machine?.model || "Standard"}
-                            </p>
-                          </td>
-                          <td className="border-x-2 border-black p-1 text-center">
-                            {item.machine?.hsnCode || "8422"}
-                          </td>
-                          <td className="border-x-2 border-black p-1 text-center">{item.quantity}</td>
-                          <td className="border-x-2 border-black p-1 text-center">No.</td>
-                          <td className="border-x-2 border-black p-1 text-right">
-                            {rate.toLocaleString("en-IN", { minimumFractionDigits: 2 })}
-                          </td>
-                          <td className="border-x-2 border-black p-1 text-right">
-                            {taxableAmt.toLocaleString("en-IN", { minimumFractionDigits: 2 })}
-                          </td>
-                          <td className="border-x-2 border-black p-1 text-center">18%</td>
+                          <td className="border-r border-black p-1 text-center">{String(index + 1).padStart(2, "0")}</td>
+                          <td className="border-r border-black p-1 text-center">{item.machine?.hsnCode || "8422"}</td>
+                          <td className="border-r border-black p-1">{item.machine?.name}</td>
+                          <td className="border-r border-black p-1 text-center">{item.quantity}</td>
+                          <td className="border-r border-black p-1 text-center">No.</td>
+                          <td className="border-r border-black p-1 text-right">{rate.toLocaleString("en-IN")}</td>
+                          <td className="p-1 text-right">{amount.toLocaleString("en-IN")}</td>
                         </tr>
                       );
                     })}
-                    <tr className="font-bold border-y-2 border-black">
-                      <td colSpan={6} className="text-right p-1">
-                        TOTAL
-                      </td>
-                      <td className="border-x-2 border-black p-1 text-right">
-                        {Number(selectedOrderForInvoice?.totalAmount || 0).toLocaleString("en-IN", {
-                          minimumFractionDigits: 2,
-                        })}
-                      </td>
-                      <td className="border-x-2 border-black"></td>
-                    </tr>
                   </tbody>
                 </table>
 
-                {/* Payment Terms + GST Summary */}
-                <div className="grid grid-cols-2 gap-4 text-xs mb-8">
+                {/* Amounts Section */}
+                <div className="grid grid-cols-2 gap-2 text-[9px] border-t-2 border-black pt-2">
                   <div>
-                    <p className="font-bold mb-1">Payment Terms:</p>
-                    <ul className="list-disc list-inside space-y-0.5">
-                      <li>50% advance with purchase order</li>
-                      <li>40% on dispatch of machinery</li>
-                      <li>10% on successful installation and commissioning</li>
-                    </ul>
+                    <p><strong>BANK DETAILS FOR PAYMENT</strong></p>
+                    <p><strong>Bank Name:</strong> {invoiceDetails.bankName || "Bank of Baroda"}</p>
+                    <p><strong>Branch:</strong> {invoiceDetails.bankBranch || "Kopargaon"}</p>
+                    <p><strong>Account No:</strong> {invoiceDetails.accountNo || "N/A"}</p>
+                    <p><strong>IFSC Code:</strong> {invoiceDetails.ifscCode || "N/A"}</p>
                   </div>
                   <div className="border-2 border-black">
                     <div className="flex justify-between p-1 border-b border-black">
+                      <span>Sub Total</span>
+                      <span>₹{Number(selectedOrderForInvoice?.totalAmount || 0).toLocaleString("en-IN")}</span>
+                    </div>
+                    <div className="flex justify-between p-1 border-b border-black">
+                      <span>Discount @{invoiceDetails.discountPercent || "0"}%</span>
+                      <span>₹0</span>
+                    </div>
+                    <div className="flex justify-between p-1 border-b border-black">
                       <span>CGST @ 9%</span>
-                      <span>
-                        {(Number(selectedOrderForInvoice?.totalAmount || 0) * 0.09).toLocaleString(
-                          "en-IN",
-                          { minimumFractionDigits: 2 }
-                        )}
-                      </span>
+                      <span>₹{(Number(selectedOrderForInvoice?.totalAmount || 0) * 0.09).toLocaleString("en-IN")}</span>
                     </div>
                     <div className="flex justify-between p-1 border-b border-black">
                       <span>SGST @ 9%</span>
-                      <span>
-                        {(Number(selectedOrderForInvoice?.totalAmount || 0) * 0.09).toLocaleString(
-                          "en-IN",
-                          { minimumFractionDigits: 2 }
-                        )}
-                      </span>
+                      <span>₹{(Number(selectedOrderForInvoice?.totalAmount || 0) * 0.09).toLocaleString("en-IN")}</span>
                     </div>
-                    <div className="flex justify-between p-1 border-b border-black">
-                      <span>IGST @ 0%</span>
-                      <span>0.00</span>
+                    <div className="flex justify-between p-1 font-bold bg-gray-100">
+                      <span>TOTAL AMOUNT</span>
+                      <span>₹{(Number(selectedOrderForInvoice?.totalAmount || 0) * 1.18).toLocaleString("en-IN")}</span>
                     </div>
-                    <div className="flex justify-between p-1 bg-slate-100 font-bold text-sm">
-                      <span>GRAND TOTAL</span>
-                      <span>
-                        ₹{" "}
-                        {(Number(selectedOrderForInvoice?.totalAmount || 0) * 1.18).toLocaleString(
-                          "en-IN",
-                          { minimumFractionDigits: 2 }
-                        )}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Signatures */}
-                <div className="flex justify-between items-end mt-12 text-xs">
-                  <div className="text-center">
-                    <div className="border-b border-black w-32 mb-1"></div>
-                    <p>Customer Signature</p>
-                  </div>
-                  <div className="text-right">
-                    <p className="font-bold">For Uniq Pack</p>
-                    <div className="h-12"></div>
-                    <p>Authorized Signatory</p>
                   </div>
                 </div>
 
                 {/* Terms & Conditions */}
-                <div className="mt-8 text-[10px] border-t border-black pt-2">
-                  <p className="font-bold">Terms & Conditions:</p>
-                  <ol className="list-decimal list-inside">
-                    <li>Goods once sold will not be taken back.</li>
-                    <li>Warranty: 12 months from the date of installation.</li>
-                    <li>Delivery: Within 30-45 days from receipt of advance payment.</li>
-                    <li>Subject to Shrirampur jurisdiction.</li>
+                <div className="mt-3 text-[8px] border-t-2 border-black pt-2">
+                  <p><strong>Terms & Conditions:</strong></p>
+                  <ol className="list-decimal list-inside space-y-0">
+                    <li>Goods once sold will not be taken back</li>
+                    <li>Warranty: One year from installation date</li>
+                    <li>Subject to Kopargaon jurisdiction</li>
+                    <li>Payment: 50% advance, 40% on dispatch, 10% on installation</li>
                   </ol>
+                </div>
+
+                {/* Signature */}
+                <div className="flex justify-between items-end mt-6 text-[9px]">
+                  <div className="text-center">
+                    <div className="border-t border-black w-32"></div>
+                    <p>Customer Signature</p>
+                  </div>
+                  <div className="text-right">
+                    <p><strong>For UNIQ PACK</strong></p>
+                    <div className="h-8"></div>
+                    <p>Authorized Signatory</p>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
 
           <DialogFooter>
-            <Button variant="outline" onClick={() => setSelectedOrderForInvoice(null)}>
+            <Button variant="outline" onClick={() => {setSelectedOrderForInvoice(null); setInvoiceDetails({});}}>
               Close
             </Button>
             <Button onClick={downloadInvoice} className="bg-blue-600 hover:bg-blue-700">
