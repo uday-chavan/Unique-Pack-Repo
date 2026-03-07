@@ -54,8 +54,10 @@ export default function Orders() {
   const [paymentOrder, setPaymentOrder] = useState<any>(null);
   const [paymentAmount, setPaymentAmount] = useState("");
   const [selectedOrderForInvoice, setSelectedOrderForInvoice] = useState<any>(null);
+  const [selectedOrderForEWayBill, setSelectedOrderForEWayBill] = useState<any>(null);
   const [orderToDelete, setOrderToDelete] = useState<any>(null);
   const invoiceRef = useRef<HTMLDivElement>(null);
+  const eWayBillRef = useRef<HTMLDivElement>(null);
 
   const handleCreate = async (data: any) => {
     await createOrder.mutateAsync(data);
@@ -74,31 +76,16 @@ export default function Orders() {
     pdf.save(`Invoice_${selectedOrderForInvoice.id}.pdf`);
   };
 
-  const downloadEWayBill = async (order: any) => {
-    if (!order) return;
-    
-    // Create a temporary container for the e-Way bill
-    const tempContainer = document.createElement("div");
-    tempContainer.style.position = "absolute";
-    tempContainer.style.left = "-9999px";
-    tempContainer.style.top = "-9999px";
-    tempContainer.style.width = "210mm";
-    tempContainer.style.backgroundColor = "white";
-    tempContainer.innerHTML = renderEWayBillHTML(order);
-    document.body.appendChild(tempContainer);
-
-    try {
-      const canvas = await html2canvas(tempContainer, { scale: 2, useCORS: true });
-      const imgData = canvas.toDataURL("image/png");
-      const pdf = new jsPDF("p", "mm", "a4");
-      const imgProps = pdf.getImageProperties(imgData);
-      const pdfWidth = pdf.internal.pageSize.getWidth();
-      const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
-      pdf.addImage(imgData, "PNG", 0, 0, pdfWidth, pdfHeight);
-      pdf.save(`EWayBill_${order.id}.pdf`);
-    } finally {
-      document.body.removeChild(tempContainer);
-    }
+  const downloadEWayBill = async () => {
+    if (!eWayBillRef.current) return;
+    const canvas = await html2canvas(eWayBillRef.current, { scale: 2 });
+    const imgData = canvas.toDataURL("image/png");
+    const pdf = new jsPDF("p", "mm", "a4");
+    const imgProps = pdf.getImageProperties(imgData);
+    const pdfWidth = pdf.internal.pageSize.getWidth();
+    const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
+    pdf.addImage(imgData, "PNG", 0, 0, pdfWidth, pdfHeight);
+    pdf.save(`EWayBill_${selectedOrderForEWayBill.id}.pdf`);
   };
 
   const renderEWayBillHTML = (order: any) => {
@@ -422,11 +409,11 @@ export default function Orders() {
                         </DropdownMenuItem>
 
                         <DropdownMenuItem
-                          onClick={() => downloadEWayBill(order)}
+                          onClick={() => setSelectedOrderForEWayBill(order)}
                           className="cursor-pointer text-green-600 focus:text-green-600"
                         >
-                          <Download className="w-4 h-4 mr-2" />
-                          Download e-Way Bill
+                          <FileText className="w-4 h-4 mr-2" />
+                          View e-Way Bill
                         </DropdownMenuItem>
 
                         <DropdownMenuSeparator />
@@ -525,6 +512,42 @@ export default function Orders() {
               data-testid="button-confirm-payment"
             >
               {updatePayment.isPending ? "Processing..." : "Confirm Payment"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* e-Way Bill Dialog */}
+      <Dialog
+        open={!!selectedOrderForEWayBill}
+        onOpenChange={(open) => !open && setSelectedOrderForEWayBill(null)}
+      >
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto overflow-x-hidden">
+          <DialogHeader>
+            <DialogTitle>e-Way Bill Preview</DialogTitle>
+            <DialogDescription>Preview and download e-Way bill.</DialogDescription>
+          </DialogHeader>
+
+          <div className="overflow-x-hidden w-full">
+            <div
+              ref={eWayBillRef}
+              className="bg-white p-8 text-black border shadow-sm font-sans"
+              style={{
+                width: "100%",
+                maxWidth: "210mm",
+                margin: "0 auto",
+                boxSizing: "border-box",
+              }}
+              dangerouslySetInnerHTML={{ __html: renderEWayBillHTML(selectedOrderForEWayBill) }}
+            ></div>
+          </div>
+
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setSelectedOrderForEWayBill(null)}>
+              Close
+            </Button>
+            <Button onClick={downloadEWayBill} className="bg-green-600 hover:bg-green-700">
+              <Download className="w-4 h-4 mr-2" /> Download PDF
             </Button>
           </DialogFooter>
         </DialogContent>
