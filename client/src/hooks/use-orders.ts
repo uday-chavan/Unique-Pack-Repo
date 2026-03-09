@@ -111,12 +111,36 @@ export function useOrders() {
     },
   });
 
+  const updateOrderDetails = useMutation({
+    mutationFn: async ({ orderId, details }: { orderId: number; details: any }) => {
+      const res = await fetch(`/api/orders/${orderId}/details`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(details),
+        credentials: "include",
+      });
+      if (!res.ok) {
+        const error = await res.json();
+        throw new Error(error.message || "Failed to update order details");
+      }
+      return res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [api.orders.list.path] });
+      toast({ title: "Details Saved", description: "Invoice and e-Way bill details have been saved successfully." });
+    },
+    onError: (error) => {
+      toast({ variant: "destructive", title: "Save Failed", description: error.message });
+    },
+  });
+
   return {
     orders: ordersQuery.data || [],
     isLoading: ordersQuery.isLoading,
     createOrder,
     updatePayment,
     updateDeliveryStatus,
+    updateOrderDetails,
     deleteOrder,
   };
 }

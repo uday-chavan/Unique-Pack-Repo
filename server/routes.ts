@@ -199,6 +199,16 @@ export async function registerRoutes(
     res.json(updated);
   });
 
+  // Update order details (invoice and eway bill info)
+  app.patch("/api/orders/:id/details", async (req, res) => {
+    if (!req.isAuthenticated()) return res.sendStatus(401);
+    const orderId = Number(req.params.id);
+    const details = req.body; // invoiceNo, poNo, dcNo, eWayBillNo, etc.
+    
+    const updated = await storage.updateOrderDetails(orderId, details);
+    res.json(updated);
+  });
+
   // Delete order
   app.delete(api.orders.delete.path, async (req, res) => {
     if (!req.isAuthenticated()) return res.sendStatus(401);

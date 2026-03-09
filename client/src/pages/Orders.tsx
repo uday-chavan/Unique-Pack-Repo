@@ -49,7 +49,7 @@ import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
 
 export default function Orders() {
-  const { orders, isLoading, createOrder, updatePayment, updateDeliveryStatus, deleteOrder } = useOrders();
+  const { orders, isLoading, createOrder, updatePayment, updateDeliveryStatus, updateOrderDetails, deleteOrder } = useOrders();
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [paymentOrder, setPaymentOrder] = useState<any>(null);
   const [paymentAmount, setPaymentAmount] = useState("");
@@ -69,6 +69,24 @@ export default function Orders() {
 
   const handleEWayBillDetailsChange = (field: string, value: any) => {
     setEWayBillDetails(prev => ({ ...prev, [field]: value }));
+  };
+
+  const handleSaveInvoiceDetails = async () => {
+    if (!selectedOrderForInvoice) return;
+    await updateOrderDetails.mutateAsync({
+      orderId: selectedOrderForInvoice.id,
+      details: invoiceDetails,
+    });
+    setIsInvoiceEditMode(false);
+  };
+
+  const handleSaveEWayBillDetails = async () => {
+    if (!selectedOrderForEWayBill) return;
+    await updateOrderDetails.mutateAsync({
+      orderId: selectedOrderForEWayBill.id,
+      details: eWayBillDetails,
+    });
+    setIsEWayBillEditMode(false);
   };
 
   const handleCreate = async (data: any) => {
@@ -143,7 +161,7 @@ export default function Orders() {
               </tr>
               <tr style="border-bottom: 1px solid #ccc;">
                 <td style="font-weight: bold; width: 160px; padding: 8px;">Place of Delivery</td>
-                <td style="padding: 8px;">${order?.customer?.address || "N/A"}</td>
+                <td style="padding: 8px;">${details.toLocation || order?.customer?.address || "N/A"}</td>
               </tr>
               <tr style="border-bottom: 1px solid #ccc;">
                 <td style="font-weight: bold; width: 160px; padding: 8px;">Document No.</td>
@@ -224,6 +242,43 @@ export default function Orders() {
   const openPaymentDialog = (order: any) => {
     setPaymentOrder(order);
     setPaymentAmount(order.amountPaid || "0");
+  };
+
+  const openInvoiceDialog = (order: any) => {
+    // Load saved invoice details from order
+    setInvoiceDetails({
+      invoiceNo: order.invoiceNo || "",
+      poNo: order.poNo || "",
+      dcNo: order.dcNo || "",
+      eWayBillNo: order.eWayBillNo || "",
+      discountPercent: order.discountPercent || "0",
+      bankName: order.bankName || "Bank of Baroda",
+      bankBranch: order.bankBranch || "Kopargaon",
+      accountNo: order.accountNo || "",
+      ifscCode: order.ifscCode || "",
+      modeOfTransport: order.modeOfTransport || "Road",
+      dispatchedFrom: order.dispatchedFrom || "Kopargaon",
+      placeOfSupply: order.placeOfSupply || "Kopargaon",
+    });
+    setSelectedOrderForInvoice(order);
+  };
+
+  const openEWayBillDialog = (order: any) => {
+    // Load saved eway bill details from order
+    setEWayBillDetails({
+      vehicleNo: order.vehicleNo || "MH09CU6678",
+      transporterGstin: order.transporterGstin || "",
+      transportMode: order.transportMode || "Road",
+      hsnCode: order.hsnCode || "8422",
+      placeOfDispatch: order.placeOfDispatch || "Shrirampur, MAHARASHTRA-423603",
+      documentNo: order.documentNo || "",
+      transactionType: order.transactionType || "Regular",
+      transportationReason: order.transportationReason || "Outward - Supply",
+      fromLocation: order.fromLocation || "Shrirampur",
+      enteredBy: order.enteredBy || "27AGJPJ6286A1ZD",
+      toLocation: order.toLocation || "Kopargaon",
+    });
+    setSelectedOrderForEWayBill(order);
   };
 
   const getStatusBadge = (status: string) => {
@@ -413,7 +468,7 @@ export default function Orders() {
                         )}
 
                         <DropdownMenuItem
-                          onClick={() => setSelectedOrderForInvoice(order)}
+                          onClick={() => openInvoiceDialog(order)}
                           className="cursor-pointer text-blue-600 focus:text-blue-600"
                         >
                           <FileText className="w-4 h-4 mr-2" />
@@ -421,7 +476,7 @@ export default function Orders() {
                         </DropdownMenuItem>
 
                         <DropdownMenuItem
-                          onClick={() => setSelectedOrderForEWayBill(order)}
+                          onClick={() => openEWayBillDialog(order)}
                           className="cursor-pointer text-green-600 focus:text-green-600"
                         >
                           <FileText className="w-4 h-4 mr-2" />
@@ -560,7 +615,7 @@ export default function Orders() {
             <div className="grid grid-cols-2 gap-4 text-xs mb-4 max-h-80 overflow-y-auto border rounded p-4 bg-slate-50">
               <div>
                 <Label>Vehicle No</Label>
-                <Input value={eWayBillDetails.vehicleNo || ""} onChange={(e) => handleEWayBillDetailsChange("vehicleNo", e.target.value)} defaultValue="MH09CU6678" placeholder="Vehicle Number" />
+                <Input value={eWayBillDetails.vehicleNo || ""} onChange={(e) => handleEWayBillDetailsChange("vehicleNo", e.target.value)} placeholder="Vehicle Number" />
               </div>
               <div>
                 <Label>Transporter GSTIN</Label>
@@ -568,15 +623,15 @@ export default function Orders() {
               </div>
               <div>
                 <Label>Transport Mode</Label>
-                <Input value={eWayBillDetails.transportMode || ""} onChange={(e) => handleEWayBillDetailsChange("transportMode", e.target.value)} defaultValue="Road" placeholder="Road" />
+                <Input value={eWayBillDetails.transportMode || ""} onChange={(e) => handleEWayBillDetailsChange("transportMode", e.target.value)} placeholder="Road" />
               </div>
               <div>
                 <Label>HSN Code</Label>
-                <Input value={eWayBillDetails.hsnCode || ""} onChange={(e) => handleEWayBillDetailsChange("hsnCode", e.target.value)} defaultValue="8422" placeholder="HSN Code" />
+                <Input value={eWayBillDetails.hsnCode || ""} onChange={(e) => handleEWayBillDetailsChange("hsnCode", e.target.value)} placeholder="HSN Code" />
               </div>
               <div>
                 <Label>Place of Dispatch</Label>
-                <Input value={eWayBillDetails.placeOfDispatch || ""} onChange={(e) => handleEWayBillDetailsChange("placeOfDispatch", e.target.value)} defaultValue="Shrirampur, MAHARASHTRA-423603" placeholder="Place of Dispatch" />
+                <Input value={eWayBillDetails.placeOfDispatch || ""} onChange={(e) => handleEWayBillDetailsChange("placeOfDispatch", e.target.value)} placeholder="Place of Dispatch" />
               </div>
               <div>
                 <Label>Document No</Label>
@@ -584,19 +639,23 @@ export default function Orders() {
               </div>
               <div>
                 <Label>Transaction Type</Label>
-                <Input value={eWayBillDetails.transactionType || ""} onChange={(e) => handleEWayBillDetailsChange("transactionType", e.target.value)} defaultValue="Regular" placeholder="Regular" />
+                <Input value={eWayBillDetails.transactionType || ""} onChange={(e) => handleEWayBillDetailsChange("transactionType", e.target.value)} placeholder="Regular" />
               </div>
               <div>
                 <Label>Reason for Transportation</Label>
-                <Input value={eWayBillDetails.transportationReason || ""} onChange={(e) => handleEWayBillDetailsChange("transportationReason", e.target.value)} defaultValue="Outward - Supply" placeholder="Outward - Supply" />
+                <Input value={eWayBillDetails.transportationReason || ""} onChange={(e) => handleEWayBillDetailsChange("transportationReason", e.target.value)} placeholder="Outward - Supply" />
               </div>
               <div>
                 <Label>From Location</Label>
-                <Input value={eWayBillDetails.fromLocation || ""} onChange={(e) => handleEWayBillDetailsChange("fromLocation", e.target.value)} defaultValue="Shrirampur" placeholder="From Location" />
+                <Input value={eWayBillDetails.fromLocation || ""} onChange={(e) => handleEWayBillDetailsChange("fromLocation", e.target.value)} placeholder="From Location" />
               </div>
               <div>
                 <Label>Entered By (GSTIN)</Label>
-                <Input value={eWayBillDetails.enteredBy || ""} onChange={(e) => handleEWayBillDetailsChange("enteredBy", e.target.value)} defaultValue="27AGJPJ6286A1ZD" placeholder="GSTIN" />
+                <Input value={eWayBillDetails.enteredBy || ""} onChange={(e) => handleEWayBillDetailsChange("enteredBy", e.target.value)} placeholder="GSTIN" />
+              </div>
+                            <div>
+                <Label>Enter Place to Deliver</Label>
+                <Input value={eWayBillDetails.toLocation || ""} onChange={(e) => handleEWayBillDetailsChange("toLocation", e.target.value)} placeholder="Place of Delivery" />
               </div>
             </div>
           )}
@@ -616,16 +675,36 @@ export default function Orders() {
           </div>
 
           <DialogFooter>
-            <Button variant="outline" onClick={() => {
-              setSelectedOrderForEWayBill(null);
-              setIsEWayBillEditMode(false);
-              setEWayBillDetails({});
-            }}>
-              Close
-            </Button>
-            <Button onClick={downloadEWayBill} className="bg-green-600 hover:bg-green-700">
-              <Download className="w-4 h-4 mr-2" /> Download PDF
-            </Button>
+            {isEWayBillEditMode ? (
+              <>
+                <Button variant="outline" onClick={() => {
+                  setIsEWayBillEditMode(false);
+                  setEWayBillDetails({});
+                }}>
+                  Cancel
+                </Button>
+                <Button 
+                  onClick={handleSaveEWayBillDetails} 
+                  disabled={updateOrderDetails.isPending}
+                  className="bg-emerald-600 hover:bg-emerald-700"
+                >
+                  {updateOrderDetails.isPending ? "Saving..." : "Save Details"}
+                </Button>
+              </>
+            ) : (
+              <>
+                <Button variant="outline" onClick={() => {
+                  setSelectedOrderForEWayBill(null);
+                  setIsEWayBillEditMode(false);
+                  setEWayBillDetails({});
+                }}>
+                  Close
+                </Button>
+                <Button onClick={downloadEWayBill} className="bg-green-600 hover:bg-green-700">
+                  <Download className="w-4 h-4 mr-2" /> Download PDF
+                </Button>
+              </>
+            )}
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -697,15 +776,15 @@ export default function Orders() {
               </div>
               <div>
                 <Label>Mode of Transport</Label>
-                <Input value={invoiceDetails.modeOfTransport || "Road"} onChange={(e) => handleInvoiceDetailsChange("modeOfTransport", e.target.value)} placeholder="Road" />
+                <Input value={invoiceDetails.modeOfTransport || ""} onChange={(e) => handleInvoiceDetailsChange("modeOfTransport", e.target.value)} placeholder="Road" />
               </div>
               <div>
                 <Label>Dispatched From</Label>
-                <Input value={invoiceDetails.dispatchedFrom || "Kopargaon"} onChange={(e) => handleInvoiceDetailsChange("dispatchedFrom", e.target.value)} placeholder="Kopargaon" />
+                <Input value={invoiceDetails.dispatchedFrom || ""} onChange={(e) => handleInvoiceDetailsChange("dispatchedFrom", e.target.value)} placeholder="Kopargaon" />
               </div>
               <div>
                 <Label>Place of Supply</Label>
-                <Input value={invoiceDetails.placeOfSupply || "Kopargaon"} onChange={(e) => handleInvoiceDetailsChange("placeOfSupply", e.target.value)} placeholder="Kopargaon" />
+                <Input value={invoiceDetails.placeOfSupply || ""} onChange={(e) => handleInvoiceDetailsChange("placeOfSupply", e.target.value)} placeholder="Kopargaon" />
               </div>
             </div>
           )}
@@ -862,16 +941,36 @@ export default function Orders() {
           </div>
 
           <DialogFooter>
-            <Button variant="outline" onClick={() => {
-              setSelectedOrderForInvoice(null);
-              setInvoiceDetails({});
-              setIsInvoiceEditMode(false);
-            }}>
-              Close
-            </Button>
-            <Button onClick={downloadInvoice} className="bg-blue-600 hover:bg-blue-700">
-              <Download className="w-4 h-4 mr-2" /> Download PDF
-            </Button>
+            {isInvoiceEditMode ? (
+              <>
+                <Button variant="outline" onClick={() => {
+                  setIsInvoiceEditMode(false);
+                  setInvoiceDetails({});
+                }}>
+                  Cancel
+                </Button>
+                <Button 
+                  onClick={handleSaveInvoiceDetails} 
+                  disabled={updateOrderDetails.isPending}
+                  className="bg-emerald-600 hover:bg-emerald-700"
+                >
+                  {updateOrderDetails.isPending ? "Saving..." : "Save Details"}
+                </Button>
+              </>
+            ) : (
+              <>
+                <Button variant="outline" onClick={() => {
+                  setSelectedOrderForInvoice(null);
+                  setInvoiceDetails({});
+                  setIsInvoiceEditMode(false);
+                }}>
+                  Close
+                </Button>
+                <Button onClick={downloadInvoice} className="bg-blue-600 hover:bg-blue-700">
+                  <Download className="w-4 h-4 mr-2" /> Download PDF
+                </Button>
+              </>
+            )}
           </DialogFooter>
         </DialogContent>
       </Dialog>

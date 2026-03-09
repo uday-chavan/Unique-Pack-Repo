@@ -81,6 +81,18 @@ export const orders = pgTable("orders", {
   modeOfTransport: text("mode_of_transport"),
   dispatchedFrom: text("dispatched_from"),
   placeOfSupply: text("place_of_supply"),
+  // E-Way Bill Fields
+  vehicleNo: text("vehicle_no"),
+  transporterGstin: text("transporter_gstin"),
+  transportMode: text("transport_mode"),
+  hsnCode: text("hsn_code"),
+  placeOfDispatch: text("place_of_dispatch"),
+  documentNo: text("document_no"),
+  transactionType: text("transaction_type"),
+  transportationReason: text("transportation_reason"),
+  fromLocation: text("from_location"),
+  enteredBy: text("entered_by"),
+  toLocation: text("to_location"),
   createdBy: integer("created_by").references(() => users.id),
   createdAt: timestamp("created_at").defaultNow(),
 });

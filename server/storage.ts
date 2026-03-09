@@ -36,10 +36,11 @@ export interface IStorage {
   deleteCustomer(id: number): Promise<void>;
 
   // Orders
-  getOrders(): Promise<any[]>; // Returns orders with relations
+  getOrders(): Promise<any[]>;
   createOrder(order: InsertOrder, items: InsertOrderItem[]): Promise<Order>;
   updateOrderPayment(id: number, amountPaid: string, paymentStatus: string): Promise<Order>;
   updateOrderDeliveryStatus(id: number, deliveryStatus: string): Promise<Order>;
+  updateOrderDetails(id: number, details: any): Promise<Order>;
   deleteOrder(id: number): Promise<void>;
   
   // Stats
@@ -179,6 +180,64 @@ export class DatabaseStorage implements IStorage {
       .set({ deliveryStatus })
       .where(eq(orders.id, id))
       .returning();
+    return updated;
+  }
+
+  async updateOrderDetails(id: number, details: any): Promise<Order> {
+    // ONLY fields that actually exist in the orders table (schema.ts)
+    const allowedFields = [
+      'invoiceNo',
+      'poNo',
+      'poDate',
+      'dcNo',
+      'discount',
+      'discountPercent',
+      'bankName',
+      'bankBranch',
+      'accountNo',
+      'ifscCode',
+      'paymentTerms',
+      'warrantyPeriod',
+      'eWayBillNo',
+      'modeOfTransport',
+      'dispatchedFrom',
+      'placeOfSupply',
+      'paymentStatus',
+      'deliveryStatus',
+      'amountPaid',
+      // E-Way Bill fields
+      'vehicleNo',
+      'transporterGstin',
+      'transportMode',
+      'hsnCode',
+      'placeOfDispatch',
+      'documentNo',
+      'transactionType',
+      'transportationReason',
+      'fromLocation',
+      'enteredBy',
+      'toLocation',
+    ];
+
+    const updateData: any = {};
+    for (const field of allowedFields) {
+      if (field in details) {
+        // Convert empty strings to null
+        updateData[field] = (details[field] === '' || details[field] === null) ? null : details[field];
+      }
+    }
+
+    // If nothing valid to update, return current order as-is
+    if (Object.keys(updateData).length === 0) {
+      const [existing] = await db.select().from(orders).where(eq(orders.id, id));
+      return existing;
+    }
+
+    const [updated] = await db.update(orders)
+      .set(updateData)
+      .where(eq(orders.id, id))
+      .returning();
+
     return updated;
   }
 
