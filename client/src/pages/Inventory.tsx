@@ -26,19 +26,34 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
 import { MachineForm } from "@/components/forms/MachineForm";
-import { Plus, Search, MoreHorizontal, Pencil, Trash2, Filter, Package } from "lucide-react";
+import { Plus, Search, MoreHorizontal, Pencil, Trash2, Filter, Package, Cog, Wrench } from "lucide-react";
 import { type InsertMachine } from "@shared/schema";
+
+const SPARE_PARTS_CATEGORIES = ["spare part", "spare parts", "spares", "part", "parts", "spear part", "spear parts"];
 
 export default function Inventory() {
   const { machines, isLoading, createMachine, deleteMachine, updateMachine } = useMachines();
   const [search, setSearch] = useState("");
+  const [activeTab, setActiveTab] = useState<"machineries" | "spare-parts">("machineries");
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [editingMachine, setEditingMachine] = useState<number | null>(null);
   const [hoveredRow, setHoveredRow] = useState<number | null>(null);
 
-  const filteredMachines = machines.filter(m => 
-    m.name.toLowerCase().includes(search.toLowerCase()) || 
+  const isSparePart = (machine: typeof machines[0]) => {
+    const categoryLower = machine.category.toLowerCase();
+    // Check if category contains keywords related to spare parts, accessories, components
+    return SPARE_PARTS_CATEGORIES.includes(categoryLower) || 
+           /spear|spare|part|accessory|component|bolt|bearing|screw|component/.test(categoryLower);
+  };
+
+  const tabFilteredMachines = machines.filter((m) =>
+    activeTab === "spare-parts" ? isSparePart(m) : !isSparePart(m)
+  );
+
+  const filteredMachines = tabFilteredMachines.filter(m =>
+    m.name.toLowerCase().includes(search.toLowerCase()) ||
     m.category.toLowerCase().includes(search.toLowerCase()) ||
     m.brand?.toLowerCase().includes(search.toLowerCase())
   );
@@ -81,10 +96,10 @@ export default function Inventory() {
         </Dialog>
       </div>
 
-      <div className="flex items-center gap-2 mb-6 bg-white p-2 rounded-lg border shadow-sm">
+      <div className="flex items-center gap-2 mb-4 bg-white p-2 rounded-lg border shadow-sm">
         <Search className="w-5 h-5 text-slate-400 ml-2" />
-        <Input 
-          placeholder="Search by name, brand, category..." 
+        <Input
+          placeholder="Search by name, brand, category..."
           className="border-none focus-visible:ring-0 shadow-none"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
@@ -94,12 +109,56 @@ export default function Inventory() {
         </Button>
       </div>
 
+      {/* Tab Navigation */}
+      <div className="flex items-center justify-center gap-1 mb-6 bg-slate-100 p-1 rounded-lg">
+        <button
+          onClick={() => { setActiveTab("machineries"); setSearch(""); }}
+          className={`
+            flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-all duration-200
+            ${activeTab === "machineries"
+              ? "bg-white text-blue-700 shadow-sm border border-slate-200"
+              : "text-slate-500 hover:text-slate-700 hover:bg-slate-200/60"
+            }
+          `}
+        >
+          <Cog className="w-4 h-4" />
+          Machineries
+          <span className={`
+            ml-1 text-xs px-1.5 py-0.5 rounded-full font-semibold
+            ${activeTab === "machineries" ? "bg-blue-100 text-blue-700" : "bg-slate-200 text-slate-500"}
+          `}>
+            {machines.filter(m => !isSparePart(m)).length}
+          </span>
+        </button>
+        <button
+          onClick={() => { setActiveTab("spare-parts"); setSearch(""); }}
+          className={`
+            flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-all duration-200
+            ${activeTab === "spare-parts"
+              ? "bg-white text-blue-700 shadow-sm border border-slate-200"
+              : "text-slate-500 hover:text-slate-700 hover:bg-slate-200/60"
+            }
+          `}
+        >
+          <Wrench className="w-4 h-4" />
+          Spare Parts
+          <span className={`
+            ml-1 text-xs px-1.5 py-0.5 rounded-full font-semibold
+            ${activeTab === "spare-parts" ? "bg-blue-100 text-blue-700" : "bg-slate-200 text-slate-500"}
+          `}>
+            {machines.filter(m => isSparePart(m)).length}
+          </span>
+        </button>
+      </div>
+
       <div className="rounded-xl border bg-card shadow-sm overflow-hidden">
         <Table>
           <TableHeader>
             <TableRow className="bg-slate-50 hover:bg-slate-50 border-b-slate-200">
               <TableHead className="font-semibold text-slate-700 w-[80px]">Image</TableHead>
-              <TableHead className="font-semibold text-slate-700">Machine Name</TableHead>
+              <TableHead className="font-semibold text-slate-700">
+                {activeTab === "machineries" ? "Machine Name" : "Part Name"}
+              </TableHead>
               <TableHead className="font-semibold text-slate-700">Category</TableHead>
               <TableHead className="font-semibold text-slate-700 text-right">Stock</TableHead>
               <TableHead className="font-semibold text-slate-700 text-right">Price</TableHead>
@@ -109,24 +168,49 @@ export default function Inventory() {
           </TableHeader>
           <TableBody>
             {isLoading ? (
-              <TableRow>
-                <TableCell colSpan={8} className="h-24 text-center text-muted-foreground">
-                  Loading inventory...
-                </TableCell>
-              </TableRow>
+              <>
+                {[...Array(6)].map((_, idx) => (
+                  <TableRow key={`skeleton-${idx}`} className="border-b border-slate-200">
+                    <TableCell className="p-4">
+                      <Skeleton className="h-12 w-12 rounded" />
+                    </TableCell>
+                    <TableCell className="p-4">
+                      <Skeleton className="h-4 w-32" />
+                    </TableCell>
+                    <TableCell className="p-4">
+                      <Skeleton className="h-4 w-24" />
+                    </TableCell>
+                    <TableCell className="p-4 text-right">
+                      <Skeleton className="h-4 w-12 ml-auto" />
+                    </TableCell>
+                    <TableCell className="p-4 text-right">
+                      <Skeleton className="h-4 w-16 ml-auto" />
+                    </TableCell>
+                    <TableCell className="p-4">
+                      <Skeleton className="h-6 w-16" />
+                    </TableCell>
+                    <TableCell className="p-4">
+                      <Skeleton className="h-6 w-6" />
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </>
             ) : filteredMachines.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={8} className="h-32 text-center">
                   <div className="flex flex-col items-center justify-center text-muted-foreground">
-                    <Package className="w-8 h-8 mb-2 opacity-20" />
-                    <p>No machines found</p>
+                    {activeTab === "machineries"
+                      ? <Package className="w-8 h-8 mb-2 opacity-20" />
+                      : <Wrench className="w-8 h-8 mb-2 opacity-20" />
+                    }
+                    <p>No {activeTab === "machineries" ? "machines" : "spare parts"} found</p>
                   </div>
                 </TableCell>
               </TableRow>
             ) : (
               filteredMachines.map((machine) => (
-                <TableRow 
-                  key={machine.id} 
+                <TableRow
+                  key={machine.id}
                   className="group hover:bg-slate-50/50 transition-colors"
                   onMouseEnter={() => setHoveredRow(machine.id)}
                   onMouseLeave={() => setHoveredRow(null)}
@@ -137,9 +221,9 @@ export default function Inventory() {
                       ${hoveredRow === machine.id ? 'scale-110 z-10 relative' : 'scale-100'}
                     `}>
                       {machine.imageUrl ? (
-                        <img 
-                          src={machine.imageUrl} 
-                          alt={machine.name} 
+                        <img
+                          src={machine.imageUrl}
+                          alt={machine.name}
                           className={`
                             w-16 h-12 object-cover rounded-md border
                             transition-all duration-300 ease-out
@@ -217,20 +301,19 @@ export default function Inventory() {
                             <DialogHeader>
                               <DialogTitle>Edit Machine</DialogTitle>
                             </DialogHeader>
-                            <MachineForm 
-                              onSubmit={handleUpdate} 
-                              isLoading={updateMachine.isPending} 
+                            <MachineForm
+                              onSubmit={handleUpdate}
+                              isLoading={updateMachine.isPending}
                               defaultValues={{
                                 ...machine,
-                                purchasePrice: machine.purchasePrice,
-                                sellingPrice: machine.sellingPrice,
-                                quantity: machine.quantity,
+                                price: machine.sellingPrice, // Use selling price as the single price field
+                                quantity: machine.quantity ? Number(machine.quantity) : 0,
                                 supplierId: machine.supplierId || undefined
                               }}
                             />
                           </DialogContent>
                         </Dialog>
-                        <DropdownMenuItem 
+                        <DropdownMenuItem
                           className="text-red-600 focus:text-red-600"
                           onClick={() => deleteMachine.mutate(machine.id)}
                         >

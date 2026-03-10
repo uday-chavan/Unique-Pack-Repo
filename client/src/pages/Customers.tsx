@@ -33,6 +33,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { CustomerForm } from "@/components/forms/CustomerForm";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Users, Mail, Phone, Building, Plus, Trash2 } from "lucide-react";
 import { type InsertCustomer } from "@shared/schema";
 
@@ -71,7 +72,27 @@ export default function Customers() {
         </Dialog>
       </div>
 
-      {customers.length > 0 && (
+      {isLoading ? (
+        <div className="grid gap-6 md:grid-cols-3 mb-8">
+          {[...Array(3)].map((_, idx) => (
+            <Card key={`skeleton-card-${idx}`} className="border-t-4 border-t-blue-500 shadow-sm animate-pulse">
+              <CardHeader className="flex flex-row items-center gap-4">
+                <Skeleton className="h-12 w-12 rounded-full" />
+                <div className="grid gap-2 flex-1">
+                  <Skeleton className="h-4 w-32" />
+                  <Skeleton className="h-3 w-24" />
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="grid gap-2 text-sm">
+                  <Skeleton className="h-4 w-full" />
+                  <Skeleton className="h-4 w-40" />
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      ) : customers.length > 0 && (
         <div className="grid gap-6 md:grid-cols-3 mb-8">
           {customers.slice(0, 3).map((customer) => (
             <Card key={customer.id} className="border-t-4 border-t-blue-500 shadow-sm">
@@ -116,7 +137,36 @@ export default function Customers() {
           </TableHeader>
           <TableBody>
             {isLoading ? (
-              <TableRow><TableCell colSpan={6} className="text-center py-8">Loading...</TableCell></TableRow>
+              <>
+                {[...Array(5)].map((_, idx) => (
+                  <TableRow key={`skeleton-${idx}`} className="border-b border-slate-200">
+                    <TableCell className="py-4">
+                      <div className="space-y-1">
+                        <Skeleton className="h-4 w-40" />
+                        <Skeleton className="h-3 w-32" />
+                      </div>
+                    </TableCell>
+                    <TableCell className="py-4">
+                      <div className="space-y-1">
+                        <Skeleton className="h-4 w-48" />
+                        <Skeleton className="h-3 w-40" />
+                      </div>
+                    </TableCell>
+                    <TableCell className="py-4">
+                      <Skeleton className="h-4 w-44" />
+                    </TableCell>
+                    <TableCell className="py-4">
+                      <Skeleton className="h-4 w-32" />
+                    </TableCell>
+                    <TableCell className="py-4">
+                      <Skeleton className="h-6 w-20" />
+                    </TableCell>
+                    <TableCell className="py-4">
+                      <Skeleton className="h-8 w-8" />
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </>
             ) : customers.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={6} className="h-32 text-center">

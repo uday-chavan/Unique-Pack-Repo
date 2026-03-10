@@ -24,12 +24,14 @@ import { useSuppliers } from "@/hooks/use-crm";
 import { Upload, X } from "lucide-react";
 
 // Fix coercion for number fields - use string for decimal fields
-const formSchema = insertMachineSchema.extend({
-  purchasePrice: z.coerce.string(),
-  sellingPrice: z.coerce.string(),
-  quantity: z.coerce.number(),
-  warrantyMonths: z.coerce.number().optional(),
-  supplierId: z.coerce.number().optional(),
+const formSchema = insertMachineSchema.omit({
+  purchasePrice: true,
+  sellingPrice: true,
+}).extend({
+  price: z.union([z.coerce.string(), z.number()]),
+  quantity: z.union([z.coerce.number(), z.number()]),
+  warrantyMonths: z.union([z.coerce.number(), z.number()]).optional().nullable(),
+  supplierId: z.union([z.coerce.number(), z.number()]).optional().nullable(),
 });
 
 interface MachineFormProps {
@@ -52,8 +54,7 @@ export function MachineForm({ onSubmit, isLoading, defaultValues }: MachineFormP
       brand: "",
       model: "",
       serialNumber: "",
-      purchasePrice: "0",
-      sellingPrice: "0",
+      price: "0",
       quantity: 0,
       location: "",
       condition: "new",
@@ -95,9 +96,35 @@ export function MachineForm({ onSubmit, isLoading, defaultValues }: MachineFormP
     }
   };
 
+  // Clean empty numeric values before submitting
+  const handleFormSubmit = (data: any) => {
+    const cleanedData = { ...data };
+    
+    // Map single price field to both purchasePrice and sellingPrice
+    if (!cleanedData.price || cleanedData.price === '') {
+      cleanedData.purchasePrice = "0";
+      cleanedData.sellingPrice = "0";
+    } else {
+      // Use single price for both purchase and selling
+      cleanedData.purchasePrice = cleanedData.price;
+      cleanedData.sellingPrice = cleanedData.price;
+    }
+    
+    delete cleanedData.price; // Remove the temporary field
+    
+    if (!cleanedData.quantity || cleanedData.quantity === '') {
+      cleanedData.quantity = 0;
+    }
+    if (cleanedData.warrantyMonths === '' || cleanedData.warrantyMonths === null) {
+      delete cleanedData.warrantyMonths;
+    }
+    
+    onSubmit(cleanedData);
+  };
+
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit as any)} className="space-y-4">
+      <form onSubmit={form.handleSubmit(handleFormSubmit)} className="space-y-4">
         <div className="grid grid-cols-2 gap-4">
           <FormField
             control={form.control}
@@ -118,9 +145,24 @@ export function MachineForm({ onSubmit, isLoading, defaultValues }: MachineFormP
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Category</FormLabel>
-                <FormControl>
-                  <Input placeholder="Lathe, Drill, etc." {...field} />
-                </FormControl>
+                <Select onValueChange={field.onChange} defaultValue={field.value || ''}>
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select or type category" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    <SelectItem value="Packaging Machine">Packaging Machine</SelectItem>
+                    <SelectItem value="Lathe">Lathe</SelectItem>
+                    <SelectItem value="Drill">Drill</SelectItem>
+                    <SelectItem value="CNC">CNC</SelectItem>
+                    <SelectItem value="spare part">Spare Part</SelectItem>
+                    <SelectItem value="spare parts">Spare Parts</SelectItem>
+                    <SelectItem value="accessory">Accessory</SelectItem>
+                    <SelectItem value="component">Component</SelectItem>
+                    <SelectItem value="tool">Tool</SelectItem>
+                  </SelectContent>
+                </Select>
                 <FormMessage />
               </FormItem>
             )}
@@ -156,28 +198,15 @@ export function MachineForm({ onSubmit, isLoading, defaultValues }: MachineFormP
           />
         </div>
 
-        <div className="grid grid-cols-3 gap-4">
+        <div className="grid grid-cols-2 gap-4">
           <FormField
             control={form.control}
-            name="purchasePrice"
+            name="price"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Buy Price (₹)</FormLabel>
+                <FormLabel>Price (₹)</FormLabel>
                 <FormControl>
-                  <Input type="number" step="0.01" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          <FormField
-            control={form.control}
-            name="sellingPrice"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Sell Price (₹)</FormLabel>
-                <FormControl>
-                  <Input type="number" step="0.01" {...field} />
+                  <Input type="number" step="0.01" placeholder="Item price" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -190,7 +219,7 @@ export function MachineForm({ onSubmit, isLoading, defaultValues }: MachineFormP
               <FormItem>
                 <FormLabel>Quantity</FormLabel>
                 <FormControl>
-                  <Input type="number" {...field} />
+                  <Input type="number" placeholder="Stock quantity" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>

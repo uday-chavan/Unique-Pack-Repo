@@ -81,14 +81,62 @@ export async function registerRoutes(
 
   app.patch(api.machines.update.path, async (req, res) => {
     if (!req.isAuthenticated()) return res.sendStatus(401);
-    const machine = await storage.updateMachine(Number(req.params.id), req.body);
-    res.json(machine);
+    try {
+      // Validate input using shared schema
+      const validated = api.machines.update.input.parse(req.body);
+      
+      // Clean numeric fields: remove empty strings, convert to null if empty
+      const cleanedData = { ...validated };
+      if ('purchasePrice' in cleanedData && cleanedData.purchasePrice === '') {
+        delete cleanedData.purchasePrice;
+      }
+      if ('sellingPrice' in cleanedData && cleanedData.sellingPrice === '') {
+        delete cleanedData.sellingPrice;
+      }
+      if ('quantity' in cleanedData && (cleanedData.quantity === '' || cleanedData.quantity === null)) {
+        delete cleanedData.quantity;
+      }
+      if ('warrantyMonths' in cleanedData && cleanedData.warrantyMonths === '') {
+        delete cleanedData.warrantyMonths;
+      }
+      
+      const machine = await storage.updateMachine(Number(req.params.id), cleanedData);
+      res.json(machine);
+    } catch (err: any) {
+      // Handle validation errors
+      if (err instanceof z.ZodError) {
+        return res.status(400).json({
+          message: "Validation error",
+          errors: err.errors.map(e => ({
+            field: e.path.join('.'),
+            message: e.message
+          }))
+        });
+      }
+      // Handle numeric parsing errors
+      if (err.code === '22P02') {
+        return res.status(400).json({
+          message: "Invalid numeric value. Please ensure prices and quantities are valid numbers."
+        });
+      }
+      throw err;
+    }
   });
 
   app.delete(api.machines.delete.path, async (req, res) => {
     if (!req.isAuthenticated()) return res.sendStatus(401);
-    await storage.deleteMachine(Number(req.params.id));
-    res.sendStatus(204);
+    try {
+      await storage.deleteMachine(Number(req.params.id));
+      res.sendStatus(204);
+    } catch (err: any) {
+      // Handle foreign key constraint errors
+      if (err.code === '23503') {
+        return res.status(400).json({ 
+          message: "Cannot delete this machine. It is referenced in existing orders." 
+        });
+      }
+      throw err;
+    }
   });
 
   // === Suppliers ===
@@ -99,8 +147,18 @@ export async function registerRoutes(
 
   app.post(api.suppliers.create.path, async (req, res) => {
     if (!req.isAuthenticated()) return res.sendStatus(401);
-    const supplier = await storage.createSupplier(req.body);
-    res.status(201).json(supplier);
+    try {
+      // Validate input using shared schema
+      const validatedInput = api.suppliers.create.input.parse(req.body);
+      const supplier = await storage.createSupplier(validatedInput);
+      res.status(201).json(supplier);
+    } catch (err: any) {
+      // Handle validation errors
+      if (err instanceof z.ZodError) {
+        return res.status(400).json({ message: err.errors[0].message });
+      }
+      throw err;
+    }
   });
 
   app.delete(api.suppliers.delete.path, async (req, res) => {
@@ -117,8 +175,30 @@ export async function registerRoutes(
 
   app.post(api.customers.create.path, async (req, res) => {
     if (!req.isAuthenticated()) return res.sendStatus(401);
-    const customer = await storage.createCustomer(req.body);
-    res.status(201).json(customer);
+    try {
+      // Validate input using shared schema
+      const validatedInput = api.customers.create.input.parse(req.body);
+      const customer = await storage.createCustomer(validatedInput);
+      res.status(201).json(customer);
+    } catch (err: any) {
+      // Handle validation errors
+      if (err instanceof z.ZodError) {
+        return res.status(400).json({
+          message: "Validation error",
+          errors: err.errors.map(e => ({
+            field: e.path.join('.'),
+            message: e.message
+          }))
+        });
+      }
+      // Handle database constraint errors as fallback
+      if (err.code === '22001') {
+        return res.status(400).json({ 
+          message: "One or more fields exceed their maximum length limits. Please check your input data." 
+        });
+      }
+      throw err;
+    }
   });
 
   app.delete(api.customers.delete.path, async (req, res) => {

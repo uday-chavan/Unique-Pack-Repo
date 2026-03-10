@@ -68,6 +68,38 @@ app.use((req, res, next) => {
   await registerRoutes(httpServer, app);
 
   app.use((err: any, _req: Request, res: Response, next: NextFunction) => {
+    // Handle specific PostgreSQL errors
+    if (err.code === '23503') {
+      // Foreign key constraint violation
+      const message = "Cannot complete this action. The record is referenced in other data.";
+      console.error("FK Constraint Error:", err);
+      if (!res.headersSent) {
+        return res.status(400).json({ message });
+      }
+    } else if (err.code === '22001') {
+      // String too long for column
+      const message = "One or more fields exceed their maximum length limits.";
+      console.error("String Length Error:", err);
+      if (!res.headersSent) {
+        return res.status(400).json({ message });
+      }
+    } else if (err.code === '22P02') {
+      // Invalid numeric input
+      const message = "Invalid numeric value. Please ensure prices and quantities are valid numbers.";
+      console.error("Numeric Input Error:", err);
+      if (!res.headersSent) {
+        return res.status(400).json({ message });
+      }
+    } else if (err.code === '23505') {
+      // Unique constraint violation
+      const message = "A record with this value already exists.";
+      console.error("Unique Constraint Error:", err);
+      if (!res.headersSent) {
+        return res.status(400).json({ message });
+      }
+    }
+
+    // Default error handling
     const status = err.status || err.statusCode || 500;
     const message = err.message || "Internal Server Error";
 

@@ -20,6 +20,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { SupplierForm } from "@/components/forms/SupplierForm";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Truck, Plus, Trash2 } from "lucide-react";
 import {
   AlertDialog,
@@ -83,7 +84,33 @@ export default function Suppliers() {
           </TableHeader>
           <TableBody>
             {isLoading ? (
-              <TableRow><TableCell colSpan={6} className="text-center py-8">Loading...</TableCell></TableRow>
+              <>
+                {[...Array(5)].map((_, idx) => (
+                  <TableRow key={`skeleton-${idx}`} className="border-b border-slate-200">
+                    <TableCell className="py-4">
+                      <Skeleton className="h-4 w-36" />
+                    </TableCell>
+                    <TableCell className="py-4">
+                      <Skeleton className="h-4 w-40" />
+                    </TableCell>
+                    <TableCell className="py-4">
+                      <div className="space-y-1">
+                        <Skeleton className="h-4 w-48" />
+                        <Skeleton className="h-3 w-40" />
+                      </div>
+                    </TableCell>
+                    <TableCell className="py-4">
+                      <Skeleton className="h-4 w-44" />
+                    </TableCell>
+                    <TableCell className="py-4">
+                      <Skeleton className="h-6 w-20" />
+                    </TableCell>
+                    <TableCell className="py-4">
+                      <Skeleton className="h-8 w-8" />
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </>
             ) : suppliers.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={6} className="h-32 text-center">

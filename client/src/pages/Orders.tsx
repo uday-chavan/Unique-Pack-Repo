@@ -30,6 +30,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Badge } from "@/components/ui/badge";
 import { OrderForm } from "@/components/forms/OrderForm";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   Plus, Clock, CheckCircle, Truck, FileText, CreditCard,
   AlertCircle, Trash2, PackageCheck, Download, MoreHorizontal, Pencil
@@ -380,11 +381,42 @@ export default function Orders() {
           </TableHeader>
           <TableBody>
             {isLoading ? (
-              <TableRow>
-                <TableCell colSpan={9} className="h-24 text-center text-muted-foreground">
-                  Loading orders...
-                </TableCell>
-              </TableRow>
+              <>
+                {[...Array(6)].map((_, idx) => (
+                  <TableRow key={`skeleton-${idx}`} className="border-b border-slate-200">
+                    <TableCell className="py-4">
+                      <Skeleton className="h-4 w-20" />
+                    </TableCell>
+                    <TableCell className="py-4">
+                      <div className="space-y-1">
+                        <Skeleton className="h-4 w-40" />
+                        <Skeleton className="h-3 w-32" />
+                      </div>
+                    </TableCell>
+                    <TableCell className="py-4">
+                      <Skeleton className="h-4 w-32" />
+                    </TableCell>
+                    <TableCell className="py-4">
+                      <Skeleton className="h-4 w-28" />
+                    </TableCell>
+                    <TableCell className="py-4 text-right">
+                      <Skeleton className="h-4 w-20 ml-auto" />
+                    </TableCell>
+                    <TableCell className="py-4 text-right">
+                      <Skeleton className="h-4 w-20 ml-auto" />
+                    </TableCell>
+                    <TableCell className="py-4">
+                      <Skeleton className="h-6 w-20" />
+                    </TableCell>
+                    <TableCell className="py-4">
+                      <Skeleton className="h-6 w-20" />
+                    </TableCell>
+                    <TableCell className="py-4">
+                      <Skeleton className="h-8 w-8" />
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </>
             ) : orders.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={9} className="h-32 text-center">
