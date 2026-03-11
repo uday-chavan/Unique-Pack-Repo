@@ -32,6 +32,8 @@ const formSchema = insertMachineSchema.omit({
   quantity: z.union([z.coerce.number(), z.number()]),
   warrantyMonths: z.union([z.coerce.number(), z.number()]).optional().nullable(),
   supplierId: z.union([z.coerce.number(), z.number()]).optional().nullable(),
+  serialNumber: z.string().optional(),
+  location: z.string().optional(),
 });
 
 interface MachineFormProps {
@@ -119,6 +121,23 @@ export function MachineForm({ onSubmit, isLoading, defaultValues }: MachineFormP
       delete cleanedData.warrantyMonths;
     }
     
+    // Remove empty optional string fields
+    if (!cleanedData.serialNumber || cleanedData.serialNumber === '') {
+      delete cleanedData.serialNumber;
+    }
+    if (!cleanedData.location || cleanedData.location === '') {
+      delete cleanedData.location;
+    }
+    if (!cleanedData.brand || cleanedData.brand === '') {
+      delete cleanedData.brand;
+    }
+    if (!cleanedData.model || cleanedData.model === '') {
+      delete cleanedData.model;
+    }
+    if (!cleanedData.imageUrl || cleanedData.imageUrl === '') {
+      delete cleanedData.imageUrl;
+    }
+    
     onSubmit(cleanedData);
   };
 
@@ -191,6 +210,35 @@ export function MachineForm({ onSubmit, isLoading, defaultValues }: MachineFormP
                 <FormLabel>Model</FormLabel>
                 <FormControl>
                   <Input placeholder="Model number" {...field} value={field.value || ''} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
+
+        <div className="grid grid-cols-2 gap-4">
+          <FormField
+            control={form.control}
+            name="serialNumber"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Serial Number</FormLabel>
+                <FormControl>
+                  <Input placeholder="Serial number" {...field} value={field.value || ''} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="location"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Location</FormLabel>
+                <FormControl>
+                  <Input placeholder="Warehouse A, Shelf B" {...field} value={field.value || ''} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
