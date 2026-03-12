@@ -82,7 +82,7 @@ export default function Inventory() {
   const isSparePart = (machine: typeof machines[0]) => {
     const categoryLower = machine.category.toLowerCase();
     return SPARE_PARTS_CATEGORIES.includes(categoryLower) ||
-           /spear|spare|part|accessory|component|bolt|bearing|screw|component/.test(categoryLower);
+      /spear|spare|part|accessory|component|bolt|bearing|screw|component/.test(categoryLower);
   };
 
   const tabFilteredMachines = machines.filter((m) =>
@@ -123,14 +123,31 @@ export default function Inventory() {
     <Shell>
       {/* Ambient background orbs */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
-        <FloatingOrb x="5%"  y="10%" size={420} color="#1e40af" duration={14} />
-        <FloatingOrb x="70%" y="5%"  size={300} color="#1e3a5f" duration={18} />
+        <FloatingOrb x="5%" y="10%" size={420} color="#1e40af" duration={14} />
+        <FloatingOrb x="70%" y="5%" size={300} color="#1e3a5f" duration={18} />
         <FloatingOrb x="60%" y="60%" size={360} color="#0f4c75" duration={16} />
         <FloatingOrb x="15%" y="70%" size={280} color="#1a365d" duration={20} />
       </div>
 
-      <div className="relative z-10">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <motion.div
+        className="relative z-10 -mt-4"
+        initial="hidden"
+        animate="visible"
+        variants={{
+          hidden: { opacity: 0 },
+          visible: {
+            opacity: 1,
+            transition: { staggerChildren: 0.15 },
+          },
+        }}
+      >
+        <motion.div
+          className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8"
+          variants={{
+            hidden: { opacity: 0, y: 20 },
+            visible: { opacity: 1, y: 0, transition: { duration: 0.5, ease: "easeOut" } },
+          }}
+        >
           <div>
             <h2 className="text-3xl font-bold tracking-tight text-slate-900">Inventory</h2>
             <p className="text-muted-foreground mt-1">Manage machines and stock levels.</p>
@@ -152,9 +169,15 @@ export default function Inventory() {
               <MachineForm onSubmit={handleCreate} isLoading={createMachine.isPending} />
             </DialogContent>
           </Dialog>
-        </div>
+        </motion.div>
 
-        <div className="flex items-center gap-2 mb-4 bg-white p-2 rounded-lg border shadow-sm">
+        <motion.div
+          className="flex items-center gap-2 mb-4 bg-white p-2 rounded-lg border shadow-sm"
+          variants={{
+            hidden: { opacity: 0, y: 20 },
+            visible: { opacity: 1, y: 0, transition: { duration: 0.5, ease: "easeOut" } },
+          }}
+        >
           <Search className="w-5 h-5 text-slate-400 ml-2" />
           <Input
             placeholder="Search by name, brand, category..."
@@ -165,10 +188,16 @@ export default function Inventory() {
           <Button variant="ghost" size="icon">
             <Filter className="w-4 h-4 text-slate-500" />
           </Button>
-        </div>
+        </motion.div>
 
         {/* Tab Navigation */}
-        <div className="flex items-center justify-center gap-1 mb-6 bg-slate-100 p-1 rounded-lg">
+        <motion.div
+          className="flex items-center justify-center gap-1 mb-6 bg-slate-100 p-1 rounded-lg"
+          variants={{
+            hidden: { opacity: 0, scale: 0.95 },
+            visible: { opacity: 1, scale: 1, transition: { duration: 0.4, ease: "easeOut" } },
+          }}
+        >
           <button
             onClick={() => { setActiveTab("machineries"); setSearch(""); }}
             className={`
@@ -207,10 +236,16 @@ export default function Inventory() {
               {machines.filter(m => isSparePart(m)).length}
             </span>
           </button>
-        </div>
+        </motion.div>
 
         {/* Layout: Table + Chart */}
-        <div className="flex gap-4 items-start max-h-[calc(100vh-300px)]">
+        <motion.div
+          className="flex gap-4 items-start max-h-[calc(100vh-300px)]"
+          variants={{
+            hidden: { opacity: 0, y: 20 },
+            visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: "easeOut" } },
+          }}
+        >
 
           {/* Table */}
           <div className="flex-1 min-w-0 overflow-y-auto max-h-[calc(100vh-300px)]">
@@ -218,15 +253,15 @@ export default function Inventory() {
               <Table>
                 <TableHeader>
                   <TableRow className="bg-slate-50 hover:bg-slate-50 border-b-slate-200">
-                    <TableHead className="font-semibold text-slate-700 w-[80px]">Image</TableHead>
-                    <TableHead className="font-semibold text-slate-700">
+                    <TableHead className="font-semibold text-slate-700 w-[70px]">Image</TableHead>
+                    <TableHead className="font-semibold text-slate-700 w-[180px]">
                       {activeTab === "machineries" ? "Machine Name" : "Part Name"}
                     </TableHead>
-                    <TableHead className="font-semibold text-slate-700">Category</TableHead>
-                    <TableHead className="font-semibold text-slate-700 text-right">Stock</TableHead>
-                    <TableHead className="font-semibold text-slate-700 text-right">Price</TableHead>
-                    <TableHead className="font-semibold text-slate-700">Status</TableHead>
-                    <TableHead className="w-[50px]"></TableHead>
+                    <TableHead className="font-semibold text-slate-700 w-[120px]">Category</TableHead>
+                    <TableHead className="font-semibold text-slate-700 w-[70px] text-right">Stock</TableHead>
+                    <TableHead className="font-semibold text-slate-700 w-[100px] text-right">Price</TableHead>
+                    <TableHead className="font-semibold text-slate-700 w-[100px]">Status</TableHead>
+                    <TableHead className="w-[40px]"></TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -270,20 +305,20 @@ export default function Inventory() {
                               <img
                                 src={machine.imageUrl}
                                 alt={machine.name}
-                                className={`w-16 h-12 object-cover rounded-md border transition-all duration-300 ease-out ${hoveredRow === machine.id ? 'shadow-md border-blue-300' : 'shadow-sm'}`}
+                                className={`w-14 h-10 object-cover rounded-md border transition-all duration-300 ease-out ${hoveredRow === machine.id ? 'shadow-md border-blue-300' : 'shadow-sm'}`}
                               />
                             ) : (
-                              <div className={`w-16 h-12 bg-slate-100 rounded-md flex items-center justify-center transition-all duration-300 ease-out ${hoveredRow === machine.id ? 'shadow-md' : ''}`}>
+                              <div className={`w-14 h-10 bg-slate-100 rounded-md flex items-center justify-center transition-all duration-300 ease-out ${hoveredRow === machine.id ? 'shadow-md' : ''}`}>
                                 <Package className="w-6 h-6 text-slate-400" />
                               </div>
                             )}
                           </div>
                         </TableCell>
-                        <TableCell className={`font-medium text-slate-900 max-w-[300px] transition-all duration-300 ease-out ${hoveredRow === machine.id ? 'translate-x-1' : 'translate-x-0'}`}>
+                        <TableCell className={`font-medium text-slate-900 max-w-[180px] transition-all duration-300 ease-out ${hoveredRow === machine.id ? 'translate-x-1' : 'translate-x-0'}`}>
                           <div className="truncate" title={machine.name}>{machine.name}</div>
                         </TableCell>
-                        <TableCell className={`transition-all duration-300 ease-out ${hoveredRow === machine.id ? 'translate-x-1' : 'translate-x-0'}`}>
-                          <Badge variant="outline" className="text-slate-500 font-normal">{machine.category}</Badge>
+                        <TableCell className={`max-w-[120px] transition-all duration-300 ease-out ${hoveredRow === machine.id ? 'translate-x-1' : 'translate-x-0'}`}>
+                          <Badge variant="outline" className="text-slate-500 font-normal truncate block w-fit max-w-full" title={machine.category}>{machine.category}</Badge>
                         </TableCell>
                         <TableCell className={`text-right font-mono text-slate-600 transition-all duration-300 ease-out ${hoveredRow === machine.id ? 'translate-x-1' : 'translate-x-0'}`}>
                           {machine.quantity}
@@ -301,7 +336,7 @@ export default function Inventory() {
                         <TableCell className={`transition-all duration-300 ease-out ${hoveredRow === machine.id ? 'translate-x-1' : 'translate-x-0'}`}>
                           <DropdownMenu>
                             <DropdownMenuTrigger asChild>
-                              <Button variant="ghost" size="icon" className="h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity">
+                              <Button variant="ghost" size="icon" className="h-8 w-8 text-slate-500 hover:text-slate-900 transition-colors">
                                 <MoreHorizontal className="h-4 w-4" />
                               </Button>
                             </DropdownMenuTrigger>
@@ -321,7 +356,6 @@ export default function Inventory() {
                                     isLoading={updateMachine.isPending}
                                     defaultValues={{
                                       ...machine,
-                                      price: machine.sellingPrice,
                                       quantity: machine.quantity ? Number(machine.quantity) : 0,
                                       supplierId: machine.supplierId || undefined
                                     }}
@@ -360,8 +394,8 @@ export default function Inventory() {
               </div>
             </div>
           )}
-        </div>
-      </div>
+        </motion.div>
+      </motion.div>
     </Shell>
   );
 }

@@ -28,11 +28,13 @@ export interface IStorage {
   // Suppliers
   getSuppliers(): Promise<Supplier[]>;
   createSupplier(supplier: InsertSupplier): Promise<Supplier>;
+  updateSupplier(id: number, updates: Partial<InsertSupplier>): Promise<Supplier>;
   deleteSupplier(id: number): Promise<void>;
 
   // Customers
   getCustomers(): Promise<Customer[]>;
   createCustomer(customer: InsertCustomer): Promise<Customer>;
+  updateCustomer(id: number, updates: Partial<InsertCustomer>): Promise<Customer>;
   deleteCustomer(id: number): Promise<void>;
 
   // Orders
@@ -105,6 +107,15 @@ export class DatabaseStorage implements IStorage {
     return newSupplier;
   }
 
+  async updateSupplier(id: number, updates: Partial<InsertSupplier>): Promise<Supplier> {
+    const [updated] = await db
+      .update(suppliers)
+      .set(updates)
+      .where(eq(suppliers.id, id))
+      .returning();
+    return updated;
+  }
+
   async deleteSupplier(id: number): Promise<void> {
     await db.delete(suppliers).where(eq(suppliers.id, id));
   }
@@ -116,6 +127,15 @@ export class DatabaseStorage implements IStorage {
   async createCustomer(customer: InsertCustomer): Promise<Customer> {
     const [newCustomer] = await db.insert(customers).values(customer).returning();
     return newCustomer;
+  }
+
+  async updateCustomer(id: number, updates: Partial<InsertCustomer>): Promise<Customer> {
+    const [updated] = await db
+      .update(customers)
+      .set(updates)
+      .where(eq(customers.id, id))
+      .returning();
+    return updated;
   }
 
   async deleteCustomer(id: number): Promise<void> {
@@ -184,50 +204,23 @@ export class DatabaseStorage implements IStorage {
   }
 
   async updateOrderDetails(id: number, details: any): Promise<Order> {
-    // ONLY fields that actually exist in the orders table (schema.ts)
     const allowedFields = [
-      'invoiceNo',
-      'poNo',
-      'poDate',
-      'dcNo',
-      'discount',
-      'discountPercent',
-      'bankName',
-      'bankBranch',
-      'accountNo',
-      'ifscCode',
-      'paymentTerms',
-      'warrantyPeriod',
-      'eWayBillNo',
-      'modeOfTransport',
-      'dispatchedFrom',
-      'placeOfSupply',
-      'paymentStatus',
-      'deliveryStatus',
-      'amountPaid',
-      // E-Way Bill fields
-      'vehicleNo',
-      'transporterGstin',
-      'transportMode',
-      'hsnCode',
-      'placeOfDispatch',
-      'documentNo',
-      'transactionType',
-      'transportationReason',
-      'fromLocation',
-      'enteredBy',
-      'toLocation',
+      'invoiceNo', 'poNo', 'poDate', 'dcNo', 'discount', 'discountPercent',
+      'bankName', 'bankBranch', 'accountNo', 'ifscCode', 'paymentTerms',
+      'warrantyPeriod', 'eWayBillNo', 'modeOfTransport', 'dispatchedFrom',
+      'placeOfSupply', 'paymentStatus', 'deliveryStatus', 'amountPaid',
+      'vehicleNo', 'transporterGstin', 'transportMode', 'hsnCode',
+      'placeOfDispatch', 'documentNo', 'transactionType', 'transportationReason',
+      'fromLocation', 'enteredBy', 'toLocation',
     ];
 
     const updateData: any = {};
     for (const field of allowedFields) {
       if (field in details) {
-        // Convert empty strings to null
         updateData[field] = (details[field] === '' || details[field] === null) ? null : details[field];
       }
     }
 
-    // If nothing valid to update, return current order as-is
     if (Object.keys(updateData).length === 0) {
       const [existing] = await db.select().from(orders).where(eq(orders.id, id));
       return existing;
@@ -259,7 +252,6 @@ export class DatabaseStorage implements IStorage {
       count: sql<number>`count(*)`
     }).from(machines).where(sql`quantity < 5`);
 
-    // Monthly revenue for the last 6 months
     const monthlyRevenue = await db.select({
       month: sql<string>`to_char(${orders.createdAt}, 'Mon')`,
       revenue: sql<number>`sum(${orders.totalAmount})`,
@@ -270,7 +262,6 @@ export class DatabaseStorage implements IStorage {
     .groupBy(sql`to_char(${orders.createdAt}, 'Mon')`, sql`extract(month from ${orders.createdAt})`)
     .orderBy(sql`extract(month from ${orders.createdAt})`);
 
-    // Top selling with image
     const topSelling = await db.select({
       id: machines.id,
       name: machines.name,

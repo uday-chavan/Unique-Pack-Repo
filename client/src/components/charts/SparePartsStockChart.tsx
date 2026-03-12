@@ -122,7 +122,8 @@ export function SparePartsStockChart({
               outerRadius={100}
               fill="#8884d8"
               dataKey="value"
-              animationDuration={800}
+              animationBegin={0}
+              animationDuration={600}
               animationEasing="ease-out"
               onMouseEnter={(_, index) => {
                 setHoveredSlice(chartData[index]?.category || null);
@@ -138,6 +139,7 @@ export function SparePartsStockChart({
               }}
               style={{
                 cursor: "pointer",
+                outline: "none",
               }}
             >
               {chartData.map((entry, index) => (
@@ -154,9 +156,15 @@ export function SparePartsStockChart({
                   style={{
                     filter:
                       hoveredSlice === entry.category || selectedCategory === entry.category
-                        ? "drop-shadow(0 0 12px rgba(0,0,0,0.3))"
+                        ? "drop-shadow(0 0 16px rgba(0,0,0,0.4)) brightness(1.1)"
                         : "none",
-                    transition: "all 500ms cubic-bezier(0.4, 0, 0.2, 1)",
+                    transition: "all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275)",
+                    transform:
+                      hoveredSlice === entry.category || selectedCategory === entry.category
+                        ? "scale(1.03)"
+                        : "scale(1)",
+                    transformOrigin: "center",
+                    outline: "none",
                   }}
                 />
               ))}
@@ -174,7 +182,7 @@ export function SparePartsStockChart({
 
       {/* Item List Below Chart */}
       {selectedCategory && (
-        <div className="mt-4 pt-4 border-t border-slate-200 animate-in fade-in duration-300">
+        <div className="mt-4 pt-4 border-t border-slate-200 animate-in slide-in-from-top-4 fade-in duration-200">
           <div className="flex items-center gap-2 mb-3">
             {selectedCategory === "in-stock" && (
               <CheckCircle2 className="w-5 h-5 text-green-600" />

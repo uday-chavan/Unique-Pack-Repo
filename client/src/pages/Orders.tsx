@@ -48,7 +48,38 @@ import {
 import { format } from "date-fns";
 import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
+import { motion } from "framer-motion";
 
+/* ---------- Floating Orb ---------- */
+
+function FloatingOrb({ x, y, size, color, duration }: {
+  x: string; y: string; size: number; color: string; duration: number;
+}) {
+  return (
+    <motion.div
+      className="absolute rounded-full pointer-events-none"
+      style={{
+        left: x,
+        top: y,
+        width: size,
+        height: size,
+        background: color,
+        filter: "blur(60px)",
+        opacity: 0.12,
+      }}
+      animate={{
+        x: [0, 30, -20, 10, 0],
+        y: [0, -25, 15, -10, 0],
+        scale: [1, 1.12, 0.95, 1.05, 1],
+      }}
+      transition={{
+        duration,
+        repeat: Infinity,
+        ease: "easeInOut",
+      }}
+    />
+  );
+}
 
 export default function Orders() {
   const { orders, isLoading, createOrder, updatePayment, updateDeliveryStatus, updateOrderDetails, deleteOrder } = useOrders();
@@ -74,11 +105,11 @@ export default function Orders() {
   const eWayBillRef = useRef<HTMLDivElement>(null);
 
   const handleInvoiceDetailsChange = (field: string, value: any) => {
-    setInvoiceDetails(prev => ({ ...prev, [field]: value }));
+    setInvoiceDetails((prev: any) => ({ ...prev, [field]: value }));
   };
 
   const handleEWayBillDetailsChange = (field: string, value: any) => {
-    setEWayBillDetails(prev => ({ ...prev, [field]: value }));
+    setEWayBillDetails((prev: any) => ({ ...prev, [field]: value }));
   };
 
   const handleSaveInvoiceDetails = async () => {
@@ -254,9 +285,33 @@ export default function Orders() {
 
   return (
     <Shell>
+      {/* Ambient background orbs */}
+      <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
+        <FloatingOrb x="10%" y="15%" size={400} color="#1e40af" duration={15} />
+        <FloatingOrb x="60%" y="10%" size={350} color="#1e3a5f" duration={18} />
+        <FloatingOrb x="75%" y="65%" size={320} color="#0f4c75" duration={22} />
+        <FloatingOrb x="20%" y="60%" size={280} color="#1a365d" duration={16} />
+      </div>
 
-      <div className="relative z-10">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <motion.div
+        className="relative z-10 -mt-4"
+        initial="hidden"
+        animate="visible"
+        variants={{
+          hidden: { opacity: 0 },
+          visible: {
+            opacity: 1,
+            transition: { staggerChildren: 0.15 },
+          },
+        }}
+      >
+        <motion.div
+          className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8"
+          variants={{
+            hidden: { opacity: 0, y: 20 },
+            visible: { opacity: 1, y: 0, transition: { duration: 0.5, ease: "easeOut" } },
+          }}
+        >
           <div>
             <h2 className="text-3xl font-bold tracking-tight text-slate-900">Orders</h2>
             <p className="text-muted-foreground mt-1">Track and manage customer orders.</p>
@@ -276,9 +331,15 @@ export default function Orders() {
               <OrderForm onSubmit={handleCreate} isLoading={createOrder.isPending} />
             </DialogContent>
           </Dialog>
-        </div>
+        </motion.div>
 
-        <div className="flex items-center gap-2 mt-6 mb-6 bg-white p-2 rounded-lg border shadow-sm">
+        <motion.div
+          className="flex items-center gap-2 mb-6 bg-white p-2 rounded-lg border shadow-sm"
+          variants={{
+            hidden: { opacity: 0, y: 20 },
+            visible: { opacity: 1, y: 0, transition: { duration: 0.5, ease: "easeOut" } },
+          }}
+        >
           <Search className="w-5 h-5 text-slate-400 ml-2" />
           <Input
             placeholder="Search by customer, order ID, status..."
@@ -289,9 +350,15 @@ export default function Orders() {
           <Button variant="ghost" size="icon">
             <Filter className="w-4 h-4 text-slate-500" />
           </Button>
-        </div>
+        </motion.div>
 
-        <div className="overflow-y-auto max-h-[calc(100vh-240px)] rounded-xl border-2 border-slate-300 bg-card shadow-sm">
+        <motion.div
+          className="overflow-y-auto max-h-[calc(100vh-280px)] rounded-xl border bg-card shadow-sm"
+          variants={{
+            hidden: { opacity: 0, y: 20 },
+            visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: "easeOut" } },
+          }}
+        >
           <Table className="table-fixed w-full">
             <TableHeader>
               <TableRow className="bg-slate-50 border-b-slate-200">
@@ -334,11 +401,11 @@ export default function Orders() {
                 </TableRow>
               ) : (
                 filteredOrders.map((order: any) => (
-                  <TableRow key={order.id} className="hover:bg-slate-50/50 transition-colors h-20" data-testid={`row-order-${order.id}`}>
-                    <TableCell className="font-mono text-slate-500 text-sm py-5">#{order.id.toString().padStart(5, "0")}</TableCell>
-                    <TableCell className="font-medium text-slate-900 text-sm py-5">{order.customer?.name}</TableCell>
-                    <TableCell className="text-slate-600 text-sm py-5">{order.createdAt && format(new Date(order.createdAt), "MMM d, yyyy")}</TableCell>
-                    <TableCell className="text-slate-600 text-sm py-5">
+                  <TableRow key={order.id} className="group hover:bg-slate-50/50 transition-colors h-20" data-testid={`row-order-${order.id}`}>
+                    <TableCell className="font-mono text-slate-500 text-sm py-5 transition-transform duration-300 group-hover:translate-x-1">#{order.id.toString().padStart(5, "0")}</TableCell>
+                    <TableCell className="font-medium text-slate-900 text-sm py-5 transition-transform duration-300 group-hover:translate-x-1">{order.customer?.name}</TableCell>
+                    <TableCell className="text-slate-600 text-sm py-5 transition-transform duration-300 group-hover:translate-x-1">{order.createdAt && format(new Date(order.createdAt), "MMM d, yyyy")}</TableCell>
+                    <TableCell className="text-slate-600 text-sm py-5 transition-transform duration-300 group-hover:translate-x-1">
                       <div className="flex flex-col gap-1">
                         {order.items?.map((item: any, i: number) => (
                           <div key={i} className="flex items-start gap-1 min-w-0">
@@ -349,14 +416,14 @@ export default function Orders() {
                         {(!order.items || order.items.length === 0) && <span className="text-slate-400 italic">No items</span>}
                       </div>
                     </TableCell>
-                    <TableCell className="text-right font-medium text-slate-900 text-sm py-5">₹{Number(order.totalAmount).toLocaleString("en-IN")}</TableCell>
-                    <TableCell className="text-right text-slate-600 text-sm py-5">₹{Number(order.amountPaid || 0).toLocaleString("en-IN")}</TableCell>
-                    <TableCell className="py-5">{getStatusBadge(order.paymentStatus)}</TableCell>
-                    <TableCell className="py-5">{getDeliveryBadge(order.deliveryStatus)}</TableCell>
-                    <TableCell>
+                    <TableCell className="text-right font-medium text-slate-900 text-sm py-5 transition-transform duration-300 group-hover:translate-x-1">₹{Number(order.totalAmount).toLocaleString("en-IN")}</TableCell>
+                    <TableCell className="text-right text-slate-600 text-sm py-5 transition-transform duration-300 group-hover:translate-x-1">₹{Number(order.amountPaid || 0).toLocaleString("en-IN")}</TableCell>
+                    <TableCell className="py-5 transition-transform duration-300 group-hover:translate-x-1">{getStatusBadge(order.paymentStatus)}</TableCell>
+                    <TableCell className="py-5 transition-transform duration-300 group-hover:translate-x-1">{getDeliveryBadge(order.deliveryStatus)}</TableCell>
+                    <TableCell className="transition-transform duration-300 group-hover:translate-x-1">
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                          <Button size="sm" variant="ghost" className="h-8 w-8 p-0" data-testid={`button-actions-${order.id}`}>
+                          <Button size="sm" variant="ghost" className="h-8 w-8 p-0 text-slate-500 hover:text-slate-900 transition-colors" data-testid={`button-actions-${order.id}`}>
                             <MoreHorizontal className="w-4 h-4" />
                           </Button>
                         </DropdownMenuTrigger>
@@ -388,8 +455,8 @@ export default function Orders() {
               )}
             </TableBody>
           </Table>
-        </div>
-      </div>
+        </motion.div>
+      </motion.div>
 
       {/* Delete Confirmation */}
       <AlertDialog open={!!orderToDelete} onOpenChange={(open) => !open && setOrderToDelete(null)}>

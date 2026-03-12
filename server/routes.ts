@@ -53,7 +53,6 @@ export async function registerRoutes(
 
   // === Machines ===
   app.get(api.machines.list.path, async (req, res) => {
-    // if (!req.isAuthenticated()) return res.sendStatus(401);
     const machines = await storage.getMachines();
     res.json(machines);
   });
@@ -82,10 +81,8 @@ export async function registerRoutes(
   app.patch(api.machines.update.path, async (req, res) => {
     if (!req.isAuthenticated()) return res.sendStatus(401);
     try {
-      // Validate input using shared schema
       const validated = api.machines.update.input.parse(req.body);
       
-      // Clean numeric fields: remove empty strings, convert to null if empty
       const cleanedData = { ...validated };
       if ('purchasePrice' in cleanedData && cleanedData.purchasePrice === '') {
         delete cleanedData.purchasePrice;
@@ -103,7 +100,6 @@ export async function registerRoutes(
       const machine = await storage.updateMachine(Number(req.params.id), cleanedData);
       res.json(machine);
     } catch (err: any) {
-      // Handle validation errors
       if (err instanceof z.ZodError) {
         return res.status(400).json({
           message: "Validation error",
@@ -113,7 +109,6 @@ export async function registerRoutes(
           }))
         });
       }
-      // Handle numeric parsing errors
       if (err.code === '22P02') {
         return res.status(400).json({
           message: "Invalid numeric value. Please ensure prices and quantities are valid numbers."
@@ -129,7 +124,6 @@ export async function registerRoutes(
       await storage.deleteMachine(Number(req.params.id));
       res.sendStatus(204);
     } catch (err: any) {
-      // Handle foreign key constraint errors
       if (err.code === '23503') {
         return res.status(400).json({ 
           message: "Cannot delete this machine. It is referenced in existing orders." 
@@ -148,12 +142,39 @@ export async function registerRoutes(
   app.post(api.suppliers.create.path, async (req, res) => {
     if (!req.isAuthenticated()) return res.sendStatus(401);
     try {
-      // Validate input using shared schema
       const validatedInput = api.suppliers.create.input.parse(req.body);
       const supplier = await storage.createSupplier(validatedInput);
       res.status(201).json(supplier);
     } catch (err: any) {
-      // Handle validation errors
+      if (err instanceof z.ZodError) {
+        return res.status(400).json({ message: err.errors[0].message });
+      }
+      throw err;
+    }
+  });
+
+  // ✅ NEW: Update supplier
+  app.patch("/api/suppliers/:id", async (req, res) => {
+    if (!req.isAuthenticated()) return res.sendStatus(401);
+    try {
+      const id = Number(req.params.id);
+
+      // Only allow fields that exist on the suppliers table
+      const allowedFields = ["name", "contactPerson", "phone", "email", "address", "active"];
+      const updates: Record<string, any> = {};
+      for (const field of allowedFields) {
+        if (field in req.body) {
+          updates[field] = req.body[field] === "" ? null : req.body[field];
+        }
+      }
+
+      if (Object.keys(updates).length === 0) {
+        return res.status(400).json({ message: "No valid fields to update" });
+      }
+
+      const supplier = await storage.updateSupplier(id, updates);
+      res.json(supplier);
+    } catch (err: any) {
       if (err instanceof z.ZodError) {
         return res.status(400).json({ message: err.errors[0].message });
       }
@@ -176,12 +197,10 @@ export async function registerRoutes(
   app.post(api.customers.create.path, async (req, res) => {
     if (!req.isAuthenticated()) return res.sendStatus(401);
     try {
-      // Validate input using shared schema
       const validatedInput = api.customers.create.input.parse(req.body);
       const customer = await storage.createCustomer(validatedInput);
       res.status(201).json(customer);
     } catch (err: any) {
-      // Handle validation errors
       if (err instanceof z.ZodError) {
         return res.status(400).json({
           message: "Validation error",
@@ -191,11 +210,40 @@ export async function registerRoutes(
           }))
         });
       }
-      // Handle database constraint errors as fallback
       if (err.code === '22001') {
         return res.status(400).json({ 
           message: "One or more fields exceed their maximum length limits. Please check your input data." 
         });
+      }
+      throw err;
+    }
+  });
+
+  // ✅ NEW: Update customer
+  app.patch("/api/customers/:id", async (req, res) => {
+    if (!req.isAuthenticated()) return res.sendStatus(401);
+    try {
+      const id = Number(req.params.id);
+
+      // Only allow fields that exist on the customers table
+      const allowedFields = ["name", "businessName", "phone", "email", "address", "taxId", "gstin"];
+      const updates: Record<string, any> = {};
+      for (const field of allowedFields) {
+        if (field in req.body) {
+          // Coerce empty strings to null
+          updates[field] = req.body[field] === "" ? null : req.body[field];
+        }
+      }
+
+      if (Object.keys(updates).length === 0) {
+        return res.status(400).json({ message: "No valid fields to update" });
+      }
+
+      const customer = await storage.updateCustomer(id, updates);
+      res.json(customer);
+    } catch (err: any) {
+      if (err instanceof z.ZodError) {
+        return res.status(400).json({ message: err.errors[0].message });
       }
       throw err;
     }
@@ -217,7 +265,6 @@ export async function registerRoutes(
     if (!req.isAuthenticated()) return res.sendStatus(401);
     const { customerId, items, poNo, poDate } = req.body;
     
-    // Calculate total
     let total = 0;
     const orderItemsWithPrices = [];
     
@@ -244,13 +291,11 @@ export async function registerRoutes(
     res.status(201).json(order);
   });
 
-  // Update order payment
   app.patch("/api/orders/:id/payment", async (req, res) => {
     if (!req.isAuthenticated()) return res.sendStatus(401);
     const { amountPaid } = req.body;
     const orderId = Number(req.params.id);
     
-    // Get the order to check total
     const allOrders = await storage.getOrders();
     const order = allOrders.find(o => o.id === orderId);
     if (!order) return res.status(404).json({ message: "Order not found" });
@@ -269,7 +314,6 @@ export async function registerRoutes(
     res.json(updated);
   });
 
-  // Update order delivery status
   app.patch("/api/orders/:id/delivery", async (req, res) => {
     if (!req.isAuthenticated()) return res.sendStatus(401);
     const { deliveryStatus } = req.body;
@@ -279,17 +323,15 @@ export async function registerRoutes(
     res.json(updated);
   });
 
-  // Update order details (invoice and eway bill info)
   app.patch("/api/orders/:id/details", async (req, res) => {
     if (!req.isAuthenticated()) return res.sendStatus(401);
     const orderId = Number(req.params.id);
-    const details = req.body; // invoiceNo, poNo, dcNo, eWayBillNo, etc.
+    const details = req.body;
     
     const updated = await storage.updateOrderDetails(orderId, details);
     res.json(updated);
   });
 
-  // Delete order
   app.delete(api.orders.delete.path, async (req, res) => {
     if (!req.isAuthenticated()) return res.sendStatus(401);
     await storage.deleteOrder(Number(req.params.id));
@@ -319,7 +361,6 @@ async function seed() {
       role: "admin"
     });
 
-    // Import products from CSV data
     const products = [
       { name: "Uniq Pack", price: 600000, image: "product_1_uniq-pack.jpg" },
       { name: "Biscuit Packaging Machine", price: 600000, image: "product_2_hotel-pack-high-speed-biscuit-packaging-machine.jpg" },

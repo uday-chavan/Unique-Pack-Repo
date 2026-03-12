@@ -9,6 +9,7 @@ import {
   LogOut,
   Box,
   BarChart3,
+  Globe,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -69,6 +70,28 @@ export function Sidebar() {
           );
         })}
       </nav>
+
+      <div className="px-4 pb-4">
+        <a 
+          href="https://uniqpack.net" 
+          target="_blank" 
+          rel="noopener noreferrer"
+          className="relative flex items-center justify-center w-full py-3 rounded-xl border border-slate-700/50 bg-slate-800/40 overflow-hidden group hover:border-slate-600 transition-all duration-300 hover:shadow-[0_0_20px_-10px_rgba(59,130,246,0.3)]"
+        >
+          {/* Continuous elegant pulsing background */}
+          <div className="absolute inset-0 bg-gradient-to-r from-blue-500/10 via-indigo-500/10 to-purple-500/10 animate-pulse opacity-70 group-hover:opacity-100 transition-opacity"></div>
+          
+          {/* Static subtle top highlight */}
+          <div className="absolute top-0 inset-x-0 h-[1px] bg-gradient-to-r from-transparent via-blue-400/30 to-transparent"></div>
+
+          <div className="relative z-10 flex items-center gap-2">
+            <Globe className="w-4 h-4 text-blue-400 group-hover:text-blue-300 transition-colors" />
+            <span className="font-medium tracking-wide text-sm bg-gradient-to-r from-slate-200 via-white to-slate-200 bg-clip-text text-transparent group-hover:from-blue-200 group-hover:via-white group-hover:to-blue-200 transition-all duration-300">
+              Visit Website
+            </span>
+          </div>
+        </a>
+      </div>
 
       <div className="p-4 border-t border-slate-800/50 bg-slate-950/30">
         <div className="flex items-center gap-3 mb-4 px-2">

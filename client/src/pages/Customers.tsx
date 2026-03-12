@@ -1,13 +1,15 @@
 import { useState } from "react";
 import { Shell } from "@/components/layout/Shell";
 import { useCustomers } from "@/hooks/use-crm";
-import { 
-  Table, 
-  TableBody, 
-  TableCell, 
-  TableHead, 
-  TableHeader, 
-  TableRow 
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { apiRequest } from "@/lib/queryClient";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
 } from "@/components/ui/table";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -33,29 +35,118 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { CustomerForm } from "@/components/forms/CustomerForm";
+import { CustomerEditForm } from "@/components/forms/CustomerEditForm";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Users, Mail, Phone, Building, Plus, Trash2 } from "lucide-react";
-import { type InsertCustomer } from "@shared/schema";
+import { Users, Mail, Phone, Building, Plus, Trash2, Pencil } from "lucide-react";
+import { type InsertCustomer, type Customer } from "@shared/schema";
+import { motion } from "framer-motion";
+
+/* ---------- Floating Orb ---------- */
+
+function FloatingOrb({ x, y, size, color, duration }: {
+  x: string; y: string; size: number; color: string; duration: number;
+}) {
+  return (
+    <motion.div
+      className="absolute rounded-full pointer-events-none"
+      style={{
+        left: x,
+        top: y,
+        width: size,
+        height: size,
+        background: color,
+        filter: "blur(60px)",
+        opacity: 0.12,
+      }}
+      animate={{
+        x: [0, 30, -20, 10, 0],
+        y: [0, -25, 15, -10, 0],
+        scale: [1, 1.12, 0.95, 1.05, 1],
+      }}
+      transition={{
+        duration,
+        repeat: Infinity,
+        ease: "easeInOut",
+      }}
+    />
+  );
+}
 
 export default function Customers() {
   const { customers, isLoading, createCustomer, deleteCustomer } = useCustomers();
+  const queryClient = useQueryClient();
   const [isCreateOpen, setIsCreateOpen] = useState(false);
+  const [editingCustomer, setEditingCustomer] = useState<Customer | null>(null);
+
+  const updateCustomer = useMutation({
+    mutationFn: async ({ id, ...data }: InsertCustomer & { id: number }) => {
+      const res = await apiRequest("PATCH", `/api/customers/${id}`, data);
+      return res.json();
+    },
+    onSuccess: async (updatedCustomer: Customer) => {
+      // 1. Directly update the cache so UI reflects change immediately
+      queryClient.setQueriesData(
+        { predicate: (query) => String(query.queryKey[0]).includes("/api/customers") },
+        (old: Customer[] | undefined) =>
+          old ? old.map((c) => (c.id === updatedCustomer.id ? updatedCustomer : c)) : old
+      );
+      // 2. Also invalidate so next background fetch stays fresh
+      await queryClient.invalidateQueries({ queryKey: ["/api/customers"] });
+    },
+  });
 
   const handleCreate = async (data: InsertCustomer) => {
     await createCustomer.mutateAsync(data);
     setIsCreateOpen(false);
   };
 
+  const handleEdit = async (data: InsertCustomer) => {
+    if (!editingCustomer) return;
+    try {
+      await updateCustomer.mutateAsync({ id: editingCustomer.id, ...data });
+      setEditingCustomer(null);
+    } catch (err) {
+      console.error("Failed to update customer:", err);
+    }
+  };
+
   return (
     <Shell>
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+      {/* Ambient background orbs */}
+      <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
+        <FloatingOrb x="80%" y="15%" size={380} color="#1e40af" duration={17} />
+        <FloatingOrb x="10%" y="50%" size={320} color="#1e3a5f" duration={20} />
+      </div>
+
+      <motion.div
+        className="relative z-10 -mt-4"
+        initial="hidden"
+        animate="visible"
+        variants={{
+          hidden: { opacity: 0 },
+          visible: {
+            opacity: 1,
+            transition: { staggerChildren: 0.15 },
+          },
+        }}
+      >
+        <motion.div
+          className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8"
+          variants={{
+            hidden: { opacity: 0, y: 20 },
+            visible: { opacity: 1, y: 0, transition: { duration: 0.5, ease: "easeOut" } },
+          }}
+        >
         <div>
           <h2 className="text-3xl font-bold tracking-tight text-slate-900">Customers</h2>
           <p className="text-muted-foreground mt-1">Directory of client relationships.</p>
         </div>
         <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
           <DialogTrigger asChild>
-            <Button className="bg-blue-600 hover:bg-blue-700 shadow-md shadow-blue-900/10" data-testid="button-add-customer">
+            <Button
+              className="bg-blue-600 hover:bg-blue-700 shadow-md shadow-blue-900/10"
+              data-testid="button-add-customer"
+            >
               <Plus className="w-4 h-4 mr-2" />
               Add Customer
             </Button>
@@ -67,15 +158,28 @@ export default function Customers() {
                 Enter the customer's contact and business details.
               </DialogDescription>
             </DialogHeader>
-            <CustomerForm onSubmit={handleCreate} isLoading={createCustomer.isPending} />
+            <CustomerForm
+              onSubmit={handleCreate}
+              isLoading={createCustomer.isPending}
+              allCustomers={customers}
+            />
           </DialogContent>
         </Dialog>
-      </div>
+      </motion.div>
 
       {isLoading ? (
-        <div className="grid gap-6 md:grid-cols-3 mb-8">
+        <motion.div
+          className="grid gap-6 md:grid-cols-3 mb-8"
+          variants={{
+            hidden: { opacity: 0, y: 20 },
+            visible: { opacity: 1, y: 0, transition: { duration: 0.5, ease: "easeOut" } },
+          }}
+        >
           {[...Array(3)].map((_, idx) => (
-            <Card key={`skeleton-card-${idx}`} className="border-t-4 border-t-blue-500 shadow-sm animate-pulse">
+            <Card
+              key={`skeleton-card-${idx}`}
+              className="border-t-4 border-t-blue-500 shadow-sm animate-pulse"
+            >
               <CardHeader className="flex flex-row items-center gap-4">
                 <Skeleton className="h-12 w-12 rounded-full" />
                 <div className="grid gap-2 flex-1">
@@ -91,9 +195,15 @@ export default function Customers() {
               </CardContent>
             </Card>
           ))}
-        </div>
+        </motion.div>
       ) : customers.length > 0 && (
-        <div className="grid gap-6 md:grid-cols-3 mb-8">
+        <motion.div
+          className="grid gap-6 md:grid-cols-3 mb-8"
+          variants={{
+            hidden: { opacity: 0, y: 20 },
+            visible: { opacity: 1, y: 0, transition: { duration: 0.5, ease: "easeOut" } },
+          }}
+        >
           {customers.slice(0, 3).map((customer) => (
             <Card key={customer.id} className="border-t-4 border-t-blue-500 shadow-sm">
               <CardHeader className="flex flex-row items-center gap-4">
@@ -120,19 +230,34 @@ export default function Customers() {
               </CardContent>
             </Card>
           ))}
-        </div>
+        </motion.div>
       )}
 
-      <div className="rounded-xl border bg-card shadow-sm overflow-hidden">
+      <CustomerEditForm
+        customer={editingCustomer}
+        allCustomers={customers}
+        open={!!editingCustomer}
+        onOpenChange={(open) => { if (!open) setEditingCustomer(null); }}
+        onSubmit={handleEdit}
+        isLoading={updateCustomer.isPending}
+      />
+
+      <motion.div
+        className="rounded-xl border bg-card shadow-sm overflow-hidden"
+        variants={{
+          hidden: { opacity: 0, y: 20 },
+          visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: "easeOut" } },
+        }}
+      >
         <Table>
           <TableHeader>
             <TableRow className="bg-slate-50 border-b-slate-200">
               <TableHead>Customer</TableHead>
               <TableHead>Contact</TableHead>
               <TableHead>Location</TableHead>
-              <TableHead>Tax ID</TableHead>
+              <TableHead>GSTIN</TableHead>
               <TableHead>Status</TableHead>
-              <TableHead className="w-[80px]">Actions</TableHead>
+              <TableHead className="w-[100px]">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -156,13 +281,13 @@ export default function Customers() {
                       <Skeleton className="h-4 w-44" />
                     </TableCell>
                     <TableCell className="py-4">
-                      <Skeleton className="h-4 w-32" />
+                      <Skeleton className="h-4 w-36" />
                     </TableCell>
                     <TableCell className="py-4">
                       <Skeleton className="h-6 w-20" />
                     </TableCell>
                     <TableCell className="py-4">
-                      <Skeleton className="h-8 w-8" />
+                      <Skeleton className="h-8 w-16" />
                     </TableCell>
                   </TableRow>
                 ))}
@@ -176,54 +301,73 @@ export default function Customers() {
                   </div>
                 </TableCell>
               </TableRow>
-            ) : customers.map((c) => (
-              <TableRow key={c.id} className="hover:bg-slate-50/50">
-                <TableCell>
-                  <div className="font-medium">{c.name}</div>
-                  <div className="text-xs text-muted-foreground">{c.businessName}</div>
-                </TableCell>
-                <TableCell>
-                  <div className="text-sm">{c.email}</div>
-                  <div className="text-xs text-muted-foreground">{c.phone}</div>
-                </TableCell>
-                <TableCell className="text-sm text-slate-600 max-w-[200px] truncate">
-                  {c.address}
-                </TableCell>
-                <TableCell className="font-mono text-xs">{c.taxId || "N/A"}</TableCell>
-                <TableCell>
-                  <Badge variant="outline" className="text-green-600 border-green-200 bg-green-50">Active</Badge>
-                </TableCell>
-                <TableCell>
-                  <AlertDialog>
-                    <AlertDialogTrigger asChild>
-                      <Button variant="ghost" size="icon" className="text-red-500 hover:text-red-700 hover:bg-red-50">
-                        <Trash2 className="h-4 w-4" />
+            ) : (
+              customers.map((c) => (
+                <TableRow key={c.id} className="group hover:bg-slate-50/50 transition-colors">
+                  <TableCell className="transition-transform duration-300 group-hover:translate-x-1">
+                    <div className="font-medium">{c.name}</div>
+                    <div className="text-xs text-muted-foreground">{c.businessName}</div>
+                  </TableCell>
+                  <TableCell className="transition-transform duration-300 group-hover:translate-x-1">
+                    <div className="text-sm">{c.email}</div>
+                    <div className="text-xs text-muted-foreground">{c.phone}</div>
+                  </TableCell>
+                  <TableCell className="text-sm text-slate-600 max-w-[200px] truncate transition-transform duration-300 group-hover:translate-x-1">
+                    {c.address}
+                  </TableCell>
+                  <TableCell className="font-mono text-xs transition-transform duration-300 group-hover:translate-x-1">{c.gstin || c.taxId || "N/A"}</TableCell>
+                  <TableCell className="transition-transform duration-300 group-hover:translate-x-1">
+                    <Badge variant="outline" className="text-green-600 border-green-200 bg-green-50">
+                      Active
+                    </Badge>
+                  </TableCell>
+                  <TableCell className="transition-transform duration-300 group-hover:translate-x-1">
+                    <div className="flex items-center gap-1">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="text-blue-500 hover:text-blue-700 hover:bg-blue-50"
+                        onClick={() => setEditingCustomer(c)}
+                      >
+                        <Pencil className="h-4 w-4" />
                       </Button>
-                    </AlertDialogTrigger>
-                    <AlertDialogContent>
-                      <AlertDialogHeader>
-                        <AlertDialogTitle>Remove Customer</AlertDialogTitle>
-                        <AlertDialogDescription>
-                          Are you sure you want to remove {c.name}? This action cannot be undone.
-                        </AlertDialogDescription>
-                      </AlertDialogHeader>
-                      <AlertDialogFooter>
-                        <AlertDialogCancel>Cancel</AlertDialogCancel>
-                        <AlertDialogAction
-                          className="bg-red-600 hover:bg-red-700"
-                          onClick={() => deleteCustomer.mutate(c.id)}
-                        >
-                          Remove
-                        </AlertDialogAction>
-                      </AlertDialogFooter>
-                    </AlertDialogContent>
-                  </AlertDialog>
-                </TableCell>
-              </TableRow>
-            ))}
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="text-red-500 hover:text-red-700 hover:bg-red-50"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>Remove Customer</AlertDialogTitle>
+                            <AlertDialogDescription>
+                              Are you sure you want to remove {c.name}? This action cannot be undone.
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel>Cancel</AlertDialogCancel>
+                            <AlertDialogAction
+                              className="bg-red-600 hover:bg-red-700"
+                              onClick={() => deleteCustomer.mutate(c.id)}
+                            >
+                              Remove
+                            </AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ))
+            )}
           </TableBody>
         </Table>
-      </div>
+      </motion.div>
+      </motion.div>
     </Shell>
   );
 }
