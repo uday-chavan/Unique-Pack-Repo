@@ -58,7 +58,10 @@ export function CustomerForm({
       if (c.gstin.toUpperCase() !== gstin) return false;
       // Same GSTIN — only conflict if business name is different
       const otherBusiness = (c.businessName ?? "").trim().toLowerCase();
-      return otherBusiness !== normalizedBusiness;
+      // If the incoming form doesn't have a business name, or the other doesn't, OR they differ
+      if (!otherBusiness && !normalizedBusiness) return true; // Two individuals, same GSTIN => conflict
+      if (!otherBusiness || !normalizedBusiness) return true; // One has business, one doesn't => conflict
+      return otherBusiness !== normalizedBusiness; // Different business names => conflict
     }) ?? null;
   };
 
@@ -198,7 +201,7 @@ export function CustomerForm({
                     value={field.value || ""}
                     onChange={(e) => {
                       field.onChange(
-                        e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, "")
+                        e.target.value.toUpperCase().replace(/[^A-Z0-9]/gi, "").slice(0, 15)
                       );
                     }}
                     maxLength={15}

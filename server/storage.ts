@@ -99,7 +99,7 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getSuppliers(): Promise<Supplier[]> {
-    return await db.select().from(suppliers);
+    return await db.select().from(suppliers).orderBy(desc(suppliers.id));
   }
 
   async createSupplier(supplier: InsertSupplier): Promise<Supplier> {
@@ -121,7 +121,7 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getCustomers(): Promise<Customer[]> {
-    return await db.select().from(customers);
+    return await db.select().from(customers).orderBy(desc(customers.id));
   }
 
   async createCustomer(customer: InsertCustomer): Promise<Customer> {

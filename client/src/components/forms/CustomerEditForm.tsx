@@ -125,7 +125,7 @@ export function CustomerEditForm({
     (e: React.ChangeEvent<HTMLInputElement>) => {
       const value =
         field === "gstin"
-          ? e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, "")
+          ? e.target.value.toUpperCase().replace(/[^A-Z0-9]/gi, "").slice(0, 15)
           : e.target.value;
       setForm((prev) => ({ ...prev, [field]: value }));
       if (errors[field as keyof FormErrors])
@@ -136,7 +136,7 @@ export function CustomerEditForm({
     if (!gstin) return undefined;
 
     const gstinRegex =
-      /^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$/;
+      /^[0-9A-Z]{1,15}$/i;
     if (!gstinRegex.test(gstin)) {
       return "Invalid GSTIN format (e.g. 24AAAAA0000A1Z5)";
     }
@@ -148,7 +148,10 @@ export function CustomerEditForm({
       if (!c.gstin) return false;
       if (c.gstin.toUpperCase() !== gstin) return false;
       const otherBusiness = (c.businessName ?? "").trim().toLowerCase();
-      return otherBusiness !== normalizedBusiness;
+      // If the incoming form doesn't have a business name, or the other doesn't, OR they differ
+      if (!otherBusiness && !normalizedBusiness) return true; // Two individuals, same GSTIN => conflict
+      if (!otherBusiness || !normalizedBusiness) return true; // One has business, one doesn't => conflict
+      return otherBusiness !== normalizedBusiness; // Different business names => conflict
     });
 
     if (conflict) {
@@ -302,7 +305,9 @@ export function CustomerEditForm({
               <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 flex gap-3 text-sm">
                 <AlertCircle className="w-4 h-4 shrink-0 mt-0.5 text-red-500" />
                 <div>
-                  <p className="font-semibold text-red-700 mb-0.5">GSTIN Already in Use</p>
+                  <p className="font-semibold text-red-700 mb-0.5">
+                    {errors.gstin?.includes("Already registered") ? "GSTIN Already in Use" : "Invalid GSTIN"}
+                  </p>
                   <p className="text-red-600 text-xs">{errors.gstin}</p>
                 </div>
               </div>

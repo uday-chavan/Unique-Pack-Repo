@@ -167,8 +167,12 @@ export const transactionsRelations = relations(transactions, ({ one }) => ({
 
 export const insertUserSchema = createInsertSchema(users).omit({ id: true, createdAt: true });
 export const insertMachineSchema = createInsertSchema(machines).omit({ id: true, createdAt: true });
-export const insertSupplierSchema = createInsertSchema(suppliers).omit({ id: true });
-export const insertCustomerSchema = createInsertSchema(customers).omit({ id: true, createdAt: true });
+export const insertSupplierSchema = createInsertSchema(suppliers).omit({ id: true }).extend({
+  gstin: z.string().nullable().optional(),
+});
+export const insertCustomerSchema = createInsertSchema(customers).omit({ id: true, createdAt: true }).extend({
+  gstin: z.string().nullable().optional(),
+});
 export const insertOrderSchema = createInsertSchema(orders).omit({ id: true, createdAt: true });
 export const insertOrderItemSchema = createInsertSchema(orderItems).omit({ id: true });
 export const insertTransactionSchema = createInsertSchema(transactions).omit({ id: true, createdAt: true });
