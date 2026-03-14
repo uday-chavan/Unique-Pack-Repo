@@ -92,7 +92,7 @@ function StatCard({
       transition={{ delay, duration: 0.5, ease: "easeOut" }}
       whileHover={{ y: -4, transition: { duration: 0.2 } }}
     >
-      <Card className="relative overflow-hidden border-slate-200 hover:shadow-xl transition-shadow duration-300 group">
+      <Card className="relative overflow-hidden border-slate-600 hover:shadow-xl transition-shadow duration-300 group">
         {/* shimmer sweep */}
         <motion.div
           className="absolute inset-0 pointer-events-none"
@@ -193,7 +193,7 @@ export default function Dashboard() {
         </div>
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 mb-8">
           {[...Array(3)].map((_, i) => (
-            <Card key={i} className="border-slate-200">
+            <Card key={i} className="border-slate-500">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <Skeleton className="h-4 w-24" />
                 <Skeleton className="h-8 w-8 rounded-lg" />
@@ -308,7 +308,7 @@ export default function Dashboard() {
 
             {/* Top Selling */}
             <motion.div variants={itemVariant} className="col-span-4">
-              <Card className="border-slate-200 shadow-sm overflow-hidden">
+              <Card className="border-slate-500 shadow-sm overflow-hidden">
                 <CardHeader>
                   <div className="flex items-center gap-2">
                     <motion.div
@@ -371,7 +371,7 @@ export default function Dashboard() {
                             whileHover={{ x: 4, backgroundColor: "rgb(241 245 249)", transition: { duration: 0.15 } }}
                             className="flex items-center gap-3 p-3 bg-slate-50 rounded-lg transition-colors cursor-default"
                           >
-                            <div className="w-12 h-12 rounded overflow-hidden flex-shrink-0 border border-slate-200">
+                            <div className="w-12 h-12 rounded overflow-hidden flex-shrink-0 border border-slate-500">
                               <img src={item.imageUrl || "/placeholder.png"} alt={item.name} className="w-full h-full object-cover" />
                             </div>
                             <div className="flex-1 min-w-0">
@@ -397,7 +397,7 @@ export default function Dashboard() {
 
             {/* Revenue Trend */}
             <motion.div variants={itemVariant} className="col-span-3">
-              <Card className="border-slate-200 shadow-sm overflow-hidden">
+              <Card className="border-slate-500 shadow-sm overflow-hidden">
                 <CardHeader className="bg-gradient-to-br from-blue-50 to-indigo-50 pb-4">
                   <div className="flex items-center gap-2">
                     <motion.div
@@ -406,7 +406,7 @@ export default function Dashboard() {
                     >
                       <TrendingUp className="w-5 h-5 text-blue-600" />
                     </motion.div>
-                    <CardTitle>Revenue Trend</CardTitle>
+                    <CardTitle>Revenue Chart</CardTitle>
                   </div>
                   <CardDescription>Monthly revenue growth</CardDescription>
                 </CardHeader>

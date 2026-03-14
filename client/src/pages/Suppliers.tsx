@@ -127,7 +127,7 @@ export default function Suppliers() {
         }}
       >
         <motion.div
-          className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8"
+          className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4"
           variants={{
             hidden: { opacity: 0, y: 20 },
             visible: { opacity: 1, y: 0, transition: { duration: 0.5, ease: "easeOut" } },
@@ -165,7 +165,7 @@ export default function Suppliers() {
       />
 
       <motion.div
-        className="rounded-xl border bg-card shadow-sm overflow-hidden mt-8"
+        className="overflow-y-auto max-h-[calc(100vh-220px)] rounded-xl border border-black bg-card shadow-sm mt-4"
         variants={{
           hidden: { opacity: 0, y: 20 },
           visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: "easeOut" } },
@@ -173,7 +173,7 @@ export default function Suppliers() {
       >
         <Table>
           <TableHeader>
-            <TableRow className="bg-slate-50 border-b-slate-200">
+            <TableRow className="bg-slate-50 border-b-black">
               <TableHead>Supplier Name</TableHead>
               <TableHead>Contact Person</TableHead>
               <TableHead>Contact Details</TableHead>
@@ -186,7 +186,7 @@ export default function Suppliers() {
             {isLoading ? (
               <>
                 {[...Array(5)].map((_, idx) => (
-                  <TableRow key={`skeleton-${idx}`} className="border-b border-slate-200">
+                  <TableRow key={`skeleton-${idx}`} className="border-b border-black">
                     <TableCell className="py-4">
                       <Skeleton className="h-4 w-36" />
                     </TableCell>
@@ -221,7 +221,7 @@ export default function Suppliers() {
                 </TableCell>
               </TableRow>
             ) : suppliers.map((s) => (
-              <TableRow key={s.id} className="group hover:bg-slate-50/50 transition-colors">
+              <TableRow key={s.id} className="group hover:bg-slate-50/50 transition-colors border-b border-slate-400">
                 <TableCell className="font-medium text-slate-900 transition-transform duration-300 group-hover:translate-x-1">{s.name}</TableCell>
                 <TableCell className="transition-transform duration-300 group-hover:translate-x-1">{s.contactPerson}</TableCell>
                 <TableCell className="transition-transform duration-300 group-hover:translate-x-1">

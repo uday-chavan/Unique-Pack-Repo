@@ -131,7 +131,7 @@ export default function Customers() {
         }}
       >
         <motion.div
-          className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8"
+          className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4"
           variants={{
             hidden: { opacity: 0, y: 20 },
             visible: { opacity: 1, y: 0, transition: { duration: 0.5, ease: "easeOut" } },
@@ -169,7 +169,7 @@ export default function Customers() {
 
       {isLoading ? (
         <motion.div
-          className="grid gap-6 md:grid-cols-3 mb-8"
+          className="grid gap-4 md:grid-cols-3 mb-4"
           variants={{
             hidden: { opacity: 0, y: 20 },
             visible: { opacity: 1, y: 0, transition: { duration: 0.5, ease: "easeOut" } },
@@ -178,16 +178,16 @@ export default function Customers() {
           {[...Array(3)].map((_, idx) => (
             <Card
               key={`skeleton-card-${idx}`}
-              className="border-t-4 border-t-blue-500 shadow-sm animate-pulse"
+              className="border border-black shadow-sm animate-pulse"
             >
-              <CardHeader className="flex flex-row items-center gap-4">
-                <Skeleton className="h-12 w-12 rounded-full" />
+              <CardHeader className="flex flex-row items-center gap-3 p-4">
+                <Skeleton className="h-10 w-10 rounded-full" />
                 <div className="grid gap-2 flex-1">
                   <Skeleton className="h-4 w-32" />
                   <Skeleton className="h-3 w-24" />
                 </div>
               </CardHeader>
-              <CardContent>
+              <CardContent className="px-4 pb-4 pt-0">
                 <div className="grid gap-2 text-sm">
                   <Skeleton className="h-4 w-full" />
                   <Skeleton className="h-4 w-40" />
@@ -205,9 +205,9 @@ export default function Customers() {
           }}
         >
           {customers.slice(0, 3).map((customer) => (
-            <Card key={customer.id} className="border-t-4 border-t-blue-500 shadow-sm">
-              <CardHeader className="flex flex-row items-center gap-4">
-                <Avatar className="h-12 w-12 bg-blue-100 text-blue-700">
+            <Card key={customer.id} className="border border-black shadow-sm">
+              <CardHeader className="flex flex-row items-center gap-3 p-4">
+                <Avatar className="h-10 w-10 bg-blue-100 text-blue-700">
                   <AvatarFallback>{customer.name.charAt(0)}</AvatarFallback>
                 </Avatar>
                 <div className="grid gap-1">
@@ -243,7 +243,7 @@ export default function Customers() {
       />
 
       <motion.div
-        className="rounded-xl border bg-card shadow-sm overflow-hidden"
+        className="overflow-y-auto max-h-[calc(100vh-320px)] rounded-xl border border-black bg-card shadow-sm"
         variants={{
           hidden: { opacity: 0, y: 20 },
           visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: "easeOut" } },
@@ -251,7 +251,7 @@ export default function Customers() {
       >
         <Table>
           <TableHeader>
-            <TableRow className="bg-slate-50 border-b-slate-200">
+            <TableRow className="bg-slate-50 border-b-black">
               <TableHead>Customer</TableHead>
               <TableHead>Contact</TableHead>
               <TableHead>Location</TableHead>
@@ -264,7 +264,7 @@ export default function Customers() {
             {isLoading ? (
               <>
                 {[...Array(5)].map((_, idx) => (
-                  <TableRow key={`skeleton-${idx}`} className="border-b border-slate-200">
+                  <TableRow key={`skeleton-${idx}`} className="border-b border-black">
                     <TableCell className="py-4">
                       <div className="space-y-1">
                         <Skeleton className="h-4 w-40" />
@@ -303,7 +303,7 @@ export default function Customers() {
               </TableRow>
             ) : (
               customers.map((c) => (
-                <TableRow key={c.id} className="group hover:bg-slate-50/50 transition-colors">
+                <TableRow key={c.id} className="group hover:bg-slate-50/50 transition-colors border-b border-slate-400">
                   <TableCell className="transition-transform duration-300 group-hover:translate-x-1">
                     <div className="font-medium">{c.name}</div>
                     <div className="text-xs text-muted-foreground">{c.businessName}</div>

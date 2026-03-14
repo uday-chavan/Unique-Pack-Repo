@@ -162,7 +162,7 @@ export default function Orders() {
   const renderEWayBillHTML = (order: any, details: any = {}) => {
     const billNo = String(order?.id * 1000 + 2221).padEnd(13, '0');
     const createdDate = order?.createdAt ? new Date(order.createdAt) : new Date();
-    const validUntil = new Date(createdDate.getTime() + 48*60*60*1000);
+    const validUntil = new Date(createdDate.getTime() + 48 * 60 * 60 * 1000);
 
     return `
       <div style="border: 2px solid black; padding: 24px; font-family: Arial, sans-serif; color: black;">
@@ -334,7 +334,7 @@ export default function Orders() {
         </motion.div>
 
         <motion.div
-          className="flex items-center gap-2 mb-6 bg-white p-2 rounded-lg border shadow-sm"
+          className="flex items-center gap-2 mb-6 bg-white p-2 rounded-lg border border-black shadow-sm"
           variants={{
             hidden: { opacity: 0, y: 20 },
             visible: { opacity: 1, y: 0, transition: { duration: 0.5, ease: "easeOut" } },
@@ -343,7 +343,7 @@ export default function Orders() {
           <Search className="w-5 h-5 text-slate-400 ml-2" />
           <Input
             placeholder="Search by customer, order ID, status..."
-            className="border-none focus-visible:ring-0 shadow-none"
+            className="border-slate-500 focus-visible:ring-0 shadow-none"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />
@@ -353,7 +353,7 @@ export default function Orders() {
         </motion.div>
 
         <motion.div
-          className="overflow-y-auto max-h-[calc(100vh-280px)] rounded-xl border bg-card shadow-sm"
+          className="overflow-y-auto max-h-[calc(100vh-280px)] rounded-xl border border-black bg-card shadow-sm"
           variants={{
             hidden: { opacity: 0, y: 20 },
             visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: "easeOut" } },
@@ -361,7 +361,7 @@ export default function Orders() {
         >
           <Table className="table-fixed w-full">
             <TableHeader>
-              <TableRow className="bg-slate-50 border-b-slate-200">
+              <TableRow className="bg-slate-50 border-b-black">
                 <TableHead className="font-semibold text-slate-700 w-[80px]">Order ID</TableHead>
                 <TableHead className="font-semibold text-slate-700 w-[120px]">Customer</TableHead>
                 <TableHead className="font-semibold text-slate-700 w-[85px]">Date</TableHead>
@@ -377,7 +377,7 @@ export default function Orders() {
               {isLoading ? (
                 <>
                   {[...Array(6)].map((_, idx) => (
-                    <TableRow key={`skeleton-${idx}`} className="border-b border-slate-200">
+                    <TableRow key={`skeleton-${idx}`} className="border-b border-black">
                       <TableCell className="py-4"><Skeleton className="h-4 w-20" /></TableCell>
                       <TableCell className="py-4"><div className="space-y-1"><Skeleton className="h-4 w-40" /><Skeleton className="h-3 w-32" /></div></TableCell>
                       <TableCell className="py-4"><Skeleton className="h-4 w-32" /></TableCell>
@@ -401,7 +401,7 @@ export default function Orders() {
                 </TableRow>
               ) : (
                 filteredOrders.map((order: any) => (
-                  <TableRow key={order.id} className="group hover:bg-slate-50/50 transition-colors h-20" data-testid={`row-order-${order.id}`}>
+                  <TableRow key={order.id} className="group hover:bg-slate-50/50 transition-colors h-20 border-b border-slate-400" data-testid={`row-order-${order.id}`}>
                     <TableCell className="font-mono text-slate-500 text-sm py-5 transition-transform duration-300 group-hover:translate-x-1">#{order.id.toString().padStart(5, "0")}</TableCell>
                     <TableCell className="font-medium text-slate-900 text-sm py-5 transition-transform duration-300 group-hover:translate-x-1">{order.customer?.name}</TableCell>
                     <TableCell className="text-slate-600 text-sm py-5 transition-transform duration-300 group-hover:translate-x-1">{order.createdAt && format(new Date(order.createdAt), "MMM d, yyyy")}</TableCell>
@@ -505,7 +505,7 @@ export default function Orders() {
             <Button size="sm" variant="ghost" onClick={() => setIsEWayBillEditMode(!isEWayBillEditMode)} className="h-8 w-8 p-0"><Pencil className="w-4 h-4" /></Button>
           </div>
           {isEWayBillEditMode && (
-            <div className="grid grid-cols-2 gap-4 text-xs mb-4 max-h-80 overflow-y-auto border rounded p-4 bg-slate-50">
+            <div className="grid grid-cols-2 gap-4 text-xs mb-4 max-h-80 overflow-y-auto border border-black rounded p-4 bg-slate-50">
               <div><Label>Vehicle No</Label><Input value={eWayBillDetails.vehicleNo || ""} onChange={(e) => handleEWayBillDetailsChange("vehicleNo", e.target.value)} placeholder="Vehicle Number" /></div>
               <div><Label>Transporter GSTIN</Label><Input value={eWayBillDetails.transporterGstin || ""} onChange={(e) => handleEWayBillDetailsChange("transporterGstin", e.target.value)} placeholder="Transporter GSTIN" /></div>
               <div><Label>Transport Mode</Label><Input value={eWayBillDetails.transportMode || ""} onChange={(e) => handleEWayBillDetailsChange("transportMode", e.target.value)} placeholder="Road" /></div>
@@ -520,7 +520,7 @@ export default function Orders() {
             </div>
           )}
           <div className="overflow-x-hidden w-full">
-            <div ref={eWayBillRef} className="bg-white p-8 text-black border shadow-sm font-sans" style={{ width: "100%", maxWidth: "210mm", margin: "0 auto", boxSizing: "border-box" }} dangerouslySetInnerHTML={{ __html: renderEWayBillHTML(selectedOrderForEWayBill, eWayBillDetails) }}></div>
+            <div ref={eWayBillRef} className="bg-white p-8 text-black border border-black shadow-sm font-sans" style={{ width: "100%", maxWidth: "210mm", margin: "0 auto", boxSizing: "border-box" }} dangerouslySetInnerHTML={{ __html: renderEWayBillHTML(selectedOrderForEWayBill, eWayBillDetails) }}></div>
           </div>
           <DialogFooter>
             {isEWayBillEditMode ? (
@@ -546,7 +546,7 @@ export default function Orders() {
             <Button size="sm" variant="ghost" onClick={() => setIsInvoiceEditMode(!isInvoiceEditMode)} className="h-8 w-8 p-0"><Pencil className="w-4 h-4" /></Button>
           </div>
           {isInvoiceEditMode && (
-            <div className="grid grid-cols-2 gap-4 text-xs mb-4 max-h-64 overflow-y-auto border rounded p-4 bg-slate-50">
+            <div className="grid grid-cols-2 gap-4 text-xs mb-4 max-h-64 overflow-y-auto border border-black rounded p-4 bg-slate-50">
               <div><Label>Invoice No</Label><Input value={invoiceDetails.invoiceNo || ""} onChange={(e) => handleInvoiceDetailsChange("invoiceNo", e.target.value)} placeholder="UP/2025-26/0001" /></div>
               <div><Label>PO Number</Label><Input value={invoiceDetails.poNo || ""} onChange={(e) => handleInvoiceDetailsChange("poNo", e.target.value)} placeholder="PO Number" /></div>
               <div><Label>DC Number</Label><Input value={invoiceDetails.dcNo || ""} onChange={(e) => handleInvoiceDetailsChange("dcNo", e.target.value)} placeholder="DC Number" /></div>
@@ -562,7 +562,7 @@ export default function Orders() {
             </div>
           )}
           <div className="overflow-x-hidden w-full mt-4 border-t pt-4">
-            <div ref={invoiceRef} className="bg-white p-6 text-black border shadow-sm font-sans text-[11px]" style={{ width: "100%", maxWidth: "210mm", margin: "0 auto", boxSizing: "border-box" }}>
+            <div ref={invoiceRef} className="bg-white p-6 text-black border border-black shadow-sm font-sans text-[11px]" style={{ width: "100%", maxWidth: "210mm", margin: "0 auto", boxSizing: "border-box" }}>
               <div className="border-2 border-black p-3">
                 <div className="flex justify-between items-start border-b-2 border-black pb-3 mb-3">
                   <div>

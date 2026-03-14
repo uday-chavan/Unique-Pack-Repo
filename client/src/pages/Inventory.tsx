@@ -172,7 +172,7 @@ export default function Inventory() {
         </motion.div>
 
         <motion.div
-          className="flex items-center gap-2 mb-4 bg-white p-2 rounded-lg border shadow-sm"
+          className="flex items-center gap-2 mb-4 bg-white p-2 rounded-lg border border-black shadow-sm"
           variants={{
             hidden: { opacity: 0, y: 20 },
             visible: { opacity: 1, y: 0, transition: { duration: 0.5, ease: "easeOut" } },
@@ -203,7 +203,7 @@ export default function Inventory() {
             className={`
               flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-all duration-200
               ${activeTab === "machineries"
-                ? "bg-white text-blue-700 shadow-sm border border-slate-200"
+                ? "bg-white text-blue-700 shadow-sm border border-slate-500"
                 : "text-slate-500 hover:text-slate-700 hover:bg-slate-200/60"
               }
             `}
@@ -222,7 +222,7 @@ export default function Inventory() {
             className={`
               flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-all duration-200
               ${activeTab === "spare-parts"
-                ? "bg-white text-blue-700 shadow-sm border border-slate-200"
+                ? "bg-white text-blue-700 shadow-sm border border-slate-500"
                 : "text-slate-500 hover:text-slate-700 hover:bg-slate-200/60"
               }
             `}
@@ -249,10 +249,10 @@ export default function Inventory() {
 
           {/* Table */}
           <div className="flex-1 min-w-0 overflow-y-auto max-h-[calc(100vh-300px)]">
-            <div className="rounded-xl border bg-card shadow-sm overflow-hidden">
+            <div className="rounded-xl border border-black bg-card shadow-sm overflow-hidden">
               <Table>
                 <TableHeader>
-                  <TableRow className="bg-slate-50 hover:bg-slate-50 border-b-slate-200">
+                  <TableRow className="bg-slate-50 hover:bg-slate-50 border-b-black">
                     <TableHead className="font-semibold text-slate-700 w-[70px]">Image</TableHead>
                     <TableHead className="font-semibold text-slate-700 w-[180px]">
                       {activeTab === "machineries" ? "Machine Name" : "Part Name"}
@@ -268,7 +268,7 @@ export default function Inventory() {
                   {isLoading ? (
                     <>
                       {[...Array(6)].map((_, idx) => (
-                        <TableRow key={`skeleton-${idx}`} className="border-b border-slate-200">
+                        <TableRow key={`skeleton-${idx}`} className="border-b border-black">
                           <TableCell className="p-4"><Skeleton className="h-12 w-12 rounded" /></TableCell>
                           <TableCell className="p-4"><Skeleton className="h-4 w-32" /></TableCell>
                           <TableCell className="p-4"><Skeleton className="h-4 w-24" /></TableCell>
@@ -295,7 +295,7 @@ export default function Inventory() {
                     filteredMachines.map((machine) => (
                       <TableRow
                         key={machine.id}
-                        className="group hover:bg-slate-50/50 transition-colors"
+                        className="group hover:bg-slate-50/50 transition-colors border-b border-slate-400"
                         onMouseEnter={() => setHoveredRow(machine.id)}
                         onMouseLeave={() => setHoveredRow(null)}
                       >
@@ -305,7 +305,7 @@ export default function Inventory() {
                               <img
                                 src={machine.imageUrl}
                                 alt={machine.name}
-                                className={`w-14 h-10 object-cover rounded-md border transition-all duration-300 ease-out ${hoveredRow === machine.id ? 'shadow-md border-blue-300' : 'shadow-sm'}`}
+                                className={`w-14 h-10 object-cover rounded-md border transition-all duration-300 ease-out ${hoveredRow === machine.id ? 'shadow-md border-blue-500' : 'shadow-sm'}`}
                               />
                             ) : (
                               <div className={`w-14 h-10 bg-slate-100 rounded-md flex items-center justify-center transition-all duration-300 ease-out ${hoveredRow === machine.id ? 'shadow-md' : ''}`}>
@@ -382,7 +382,7 @@ export default function Inventory() {
           {/* Chart sidebar */}
           {showChart && (
             <div className="w-80 flex-shrink-0 overflow-y-auto max-h-[calc(100vh-300px)]">
-              <div className="rounded-xl border bg-card shadow-sm p-6">
+              <div className="rounded-xl border border-black bg-card shadow-sm p-6">
                 <h3 className="font-semibold text-slate-900 mb-4 text-sm">
                   {activeTab === "machineries" ? "Order Status" : "Stock Distribution"}
                 </h3>
