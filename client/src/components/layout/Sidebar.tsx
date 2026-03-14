@@ -12,6 +12,7 @@ import {
   Globe,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import okLogo from "@/assets/ok.png";
 
 export function Sidebar() {
   const [location] = useLocation();
@@ -32,7 +33,7 @@ export function Sidebar() {
       <div className="p-6 border-b border-slate-800/50">
         <div className="flex items-center gap-3">
           <img
-            src="/src/assets/ok.png"
+            src={okLogo}
             alt="Unique Pack"
             className="w-12 h-12 rounded-lg object-contain bg-white"
           />
@@ -54,10 +55,9 @@ export function Sidebar() {
               <div
                 className={`
                   flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-all duration-200
-                  ${
-                    active
-                      ? "bg-blue-600/10 text-blue-400 border border-blue-600/20"
-                      : "text-slate-400 hover:text-slate-100 hover:bg-slate-800/50"
+                  ${active
+                    ? "bg-blue-600/10 text-blue-400 border border-blue-600/20"
+                    : "text-slate-400 hover:text-slate-100 hover:bg-slate-800/50"
                   }
                 `}
               >
@@ -72,15 +72,15 @@ export function Sidebar() {
       </nav>
 
       <div className="px-4 pb-4">
-        <a 
-          href="https://uniqpack.net" 
-          target="_blank" 
+        <a
+          href="https://uniqpack.net"
+          target="_blank"
           rel="noopener noreferrer"
           className="relative flex items-center justify-center w-full py-3 rounded-xl border border-slate-700/50 bg-slate-800/40 overflow-hidden group hover:border-slate-600 transition-all duration-300 hover:shadow-[0_0_20px_-10px_rgba(59,130,246,0.3)]"
         >
           {/* Continuous elegant pulsing background */}
           <div className="absolute inset-0 bg-gradient-to-r from-blue-500/10 via-indigo-500/10 to-purple-500/10 animate-pulse opacity-70 group-hover:opacity-100 transition-opacity"></div>
-          
+
           {/* Static subtle top highlight */}
           <div className="absolute top-0 inset-x-0 h-[1px] bg-gradient-to-r from-transparent via-blue-400/30 to-transparent"></div>
 
