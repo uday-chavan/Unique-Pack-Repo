@@ -343,7 +343,7 @@ export default function Orders() {
           <Search className="w-5 h-5 text-slate-400 ml-2" />
           <Input
             placeholder="Search by customer, order ID, status..."
-            className="border-slate-500 focus-visible:ring-0 shadow-none"
+            className="border-slate-200 focus-visible:ring-0 shadow-none"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />

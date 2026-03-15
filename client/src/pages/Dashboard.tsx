@@ -87,13 +87,12 @@ function StatCard({
 }) {
   return (
     <motion.div
-      initial={{ opacity: 0, y: 30 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay, duration: 0.5, ease: "easeOut" }}
+      initial="hidden"
+      animate="show"
+      variants={itemVariant}
       whileHover={{ y: -4, transition: { duration: 0.2 } }}
     >
       <Card className="relative overflow-hidden border-slate-600 hover:shadow-xl transition-shadow duration-300 group">
-        {/* shimmer sweep */}
         <motion.div
           className="absolute inset-0 pointer-events-none"
           style={{
@@ -102,27 +101,26 @@ function StatCard({
           animate={{ x: ["-100%", "200%"] }}
           transition={{ duration: 2.4, repeat: Infinity, repeatDelay: 1.5, ease: "easeInOut" }}
         />
-
-        {/* coloured top bar */}
         <div className={`absolute top-0 left-0 right-0 h-0.5 ${accentColor}`} />
 
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium text-muted-foreground">{title}</CardTitle>
-          <div className={`p-2 rounded-lg bg-slate-50 ${iconColor}`}>
-            <Icon className="h-4 w-4" />
-          </div>
-        </CardHeader>
+        <motion.div variants={titleVariant}>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium text-muted-foreground">{title}</CardTitle>
+            <div className={`p-2 rounded-lg bg-slate-50 ${iconColor}`}>
+              <Icon className="h-4 w-4" />
+            </div>
+          </CardHeader>
+        </motion.div>
 
-        <CardContent>
-          <div className="text-2xl font-bold text-slate-900">{value}</div>
-          <p className="text-xs text-muted-foreground mt-1 flex items-center gap-1">
-            {arrowUp
-              ? <ArrowUpRight className="w-3 h-3 text-emerald-500" />
-              : <ArrowDownRight className="w-3 h-3 text-amber-500" />
-            }
-            {sub}
-          </p>
-        </CardContent>
+        <motion.div variants={contentVariant}>
+          <CardContent>
+            <div className="text-2xl font-bold text-slate-900">{value}</div>
+            <p className="text-xs text-muted-foreground mt-1 flex items-center gap-1">
+              {arrowUp ? <ArrowUpRight className="w-3 h-3 text-emerald-500" /> : <ArrowDownRight className="w-3 h-3 text-amber-500" />}
+              {sub}
+            </p>
+          </CardContent>
+        </motion.div>
       </Card>
     </motion.div>
   );
@@ -133,12 +131,28 @@ function StatCard({
 
 const containerVariant = {
   hidden: { opacity: 0 },
-  show: { opacity: 1, transition: { staggerChildren: 0.15 } }
+  show: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.15,
+      delayChildren: 0.2
+    }
+  }
 };
 
 const itemVariant = {
-  hidden: { opacity: 0, y: 30 },
-  show: { opacity: 1, y: 0, transition: { duration: 0.45, ease: "easeOut" } }
+  hidden: { opacity: 0, y: 20 },
+  show: { opacity: 1, y: 0, transition: { duration: 0.5, ease: "easeOut" } }
+};
+
+const titleVariant = {
+  hidden: { opacity: 0, x: -10 },
+  show: { opacity: 1, x: 0, transition: { duration: 0.4, ease: "easeOut" } }
+};
+
+const contentVariant = {
+  hidden: { opacity: 0, y: 15 },
+  show: { opacity: 1, y: 0, transition: { duration: 0.5, ease: "easeOut", delay: 0.2 } }
 };
 
 
@@ -178,7 +192,12 @@ export default function Dashboard() {
     return () => clearInterval(timer);
   }, []);
 
+  const [chartKey, setChartKey] = useState(0);
   const performanceData = stats?.monthlyRevenue || [];
+
+  useEffect(() => {
+    setChartKey(prev => prev + 1);
+  }, []);
 
   /* ---------- Loading ---------- */
   if (isLoading) {
@@ -309,88 +328,92 @@ export default function Dashboard() {
             {/* Top Selling */}
             <motion.div variants={itemVariant} className="col-span-4">
               <Card className="border-slate-500 shadow-sm overflow-hidden">
-                <CardHeader>
-                  <div className="flex items-center gap-2">
-                    <motion.div
-                      animate={{ rotate: [0, -15, 15, -8, 8, 0] }}
-                      transition={{ duration: 2.5, repeat: Infinity, repeatDelay: 3 }}
-                    >
-                      <Trophy className="w-5 h-5 text-amber-500" />
-                    </motion.div>
-                    <CardTitle>Top Selling Product</CardTitle>
-                  </div>
-                  <CardDescription>Most ordered product</CardDescription>
-                </CardHeader>
+                <motion.div variants={titleVariant}>
+                  <CardHeader>
+                    <div className="flex items-center gap-2">
+                      <motion.div
+                        animate={{ rotate: [0, -15, 15, -8, 8, 0] }}
+                        transition={{ duration: 2.5, repeat: Infinity, repeatDelay: 3 }}
+                      >
+                        <Trophy className="w-5 h-5 text-amber-500" />
+                      </motion.div>
+                      <CardTitle>Top Selling Product</CardTitle>
+                    </div>
+                    <CardDescription>Most ordered product</CardDescription>
+                  </CardHeader>
+                </motion.div>
 
-                <CardContent>
-                  {topSeller ? (
-                    <div className="space-y-4">
-                      <div className="flex justify-center">
-                        <div className="relative w-48 h-48">
-                          <SpinningRing />
-                          <div className="absolute inset-[3px] rounded-lg overflow-hidden z-10">
-                            <motion.img
-                              src={topSeller.imageUrl || "/placeholder.png"}
-                              alt={topSeller.name}
-                              className="w-full h-full object-cover"
-                              initial={{ scale: 1.1, opacity: 0 }}
-                              animate={{ scale: 1, opacity: 1 }}
-                              transition={{ duration: 0.8 }}
-                              whileHover={{ scale: 1.05, transition: { duration: 0.3 } }}
-                            />
+                <motion.div variants={contentVariant}>
+                  <CardContent>
+                    {topSeller ? (
+                      <div className="space-y-4">
+                        <div className="flex justify-center">
+                          <div className="relative w-48 h-48">
+                            <SpinningRing />
+                            <div className="absolute inset-[3px] rounded-lg overflow-hidden z-10">
+                              <motion.img
+                                src={topSeller.imageUrl || "/placeholder.png"}
+                                alt={topSeller.name}
+                                className="w-full h-full object-cover"
+                                initial={{ scale: 1.1, opacity: 0 }}
+                                animate={{ scale: 1, opacity: 1 }}
+                                transition={{ duration: 0.8 }}
+                                whileHover={{ scale: 1.05, transition: { duration: 0.3 } }}
+                              />
+                            </div>
+                            <motion.div
+                              className="absolute top-2 right-2 z-20 bg-amber-500 text-white px-3 py-1.5 rounded-full text-sm font-bold shadow-lg"
+                              animate={{ scale: [1, 1.12, 1] }}
+                              transition={{ duration: 1.8, repeat: Infinity, ease: "easeInOut" }}
+                            >
+                              #1
+                            </motion.div>
                           </div>
-                          <motion.div
-                            className="absolute top-2 right-2 z-20 bg-amber-500 text-white px-3 py-1.5 rounded-full text-sm font-bold shadow-lg"
-                            animate={{ scale: [1, 1.12, 1] }}
-                            transition={{ duration: 1.8, repeat: Infinity, ease: "easeInOut" }}
+                        </div>
+
+                        <div className="text-center">
+                          <h3 className="font-semibold text-slate-900 text-lg">{topSeller.name}</h3>
+                          <motion.p
+                            className="text-3xl font-bold text-blue-600 mt-2"
+                            animate={{ opacity: [0.7, 1, 0.7] }}
+                            transition={{ duration: 2.5, repeat: Infinity }}
                           >
-                            #1
-                          </motion.div>
+                            {Math.floor(animatedOrders)} sold
+                          </motion.p>
+                        </div>
+
+                        <div className="mt-6 space-y-3">
+                          <p className="text-sm font-semibold text-slate-700 mb-3">Other Top Products</p>
+                          {stats?.topSelling?.slice(1, 5).map((item: any, index: number) => (
+                            <motion.div
+                              key={index}
+                              initial={{ opacity: 0, x: -20 }}
+                              animate={{ opacity: 1, x: 0 }}
+                              transition={{ delay: index * 0.1 }}
+                              whileHover={{ x: 4, backgroundColor: "rgb(241 245 249)", transition: { duration: 0.15 } }}
+                              className="flex items-center gap-3 p-3 bg-slate-50 rounded-lg transition-colors cursor-default"
+                            >
+                              <div className="w-12 h-12 rounded overflow-hidden flex-shrink-0 border border-slate-500">
+                                <img src={item.imageUrl || "/placeholder.png"} alt={item.name} className="w-full h-full object-cover" />
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <p className="text-sm font-medium text-slate-700 truncate">{item.name}</p>
+                                <p className="text-xs text-slate-500">Rank #{index + 2}</p>
+                              </div>
+                              <span className="text-sm font-bold text-slate-900">{Number(item.count)} sold</span>
+                            </motion.div>
+                          ))}
                         </div>
                       </div>
-
-                      <div className="text-center">
-                        <h3 className="font-semibold text-slate-900 text-lg">{topSeller.name}</h3>
-                        <motion.p
-                          className="text-3xl font-bold text-blue-600 mt-2"
-                          animate={{ opacity: [0.7, 1, 0.7] }}
-                          transition={{ duration: 2.5, repeat: Infinity }}
-                        >
-                          {Math.floor(animatedOrders)} sold
-                        </motion.p>
+                    ) : (
+                      <div className="text-center py-12 text-muted-foreground">
+                        <Package className="w-16 h-16 mx-auto mb-3 opacity-20" />
+                        <p className="text-lg font-medium">No sales yet</p>
+                        <p className="text-sm">Products will appear here once orders are placed</p>
                       </div>
-
-                      <div className="mt-6 space-y-3">
-                        <p className="text-sm font-semibold text-slate-700 mb-3">Other Top Products</p>
-                        {stats?.topSelling?.slice(1, 5).map((item: any, index: number) => (
-                          <motion.div
-                            key={index}
-                            initial={{ opacity: 0, x: -20 }}
-                            animate={{ opacity: 1, x: 0 }}
-                            transition={{ delay: index * 0.1 }}
-                            whileHover={{ x: 4, backgroundColor: "rgb(241 245 249)", transition: { duration: 0.15 } }}
-                            className="flex items-center gap-3 p-3 bg-slate-50 rounded-lg transition-colors cursor-default"
-                          >
-                            <div className="w-12 h-12 rounded overflow-hidden flex-shrink-0 border border-slate-500">
-                              <img src={item.imageUrl || "/placeholder.png"} alt={item.name} className="w-full h-full object-cover" />
-                            </div>
-                            <div className="flex-1 min-w-0">
-                              <p className="text-sm font-medium text-slate-700 truncate">{item.name}</p>
-                              <p className="text-xs text-slate-500">Rank #{index + 2}</p>
-                            </div>
-                            <span className="text-sm font-bold text-slate-900">{Number(item.count)} sold</span>
-                          </motion.div>
-                        ))}
-                      </div>
-                    </div>
-                  ) : (
-                    <div className="text-center py-12 text-muted-foreground">
-                      <Package className="w-16 h-16 mx-auto mb-3 opacity-20" />
-                      <p className="text-lg font-medium">No sales yet</p>
-                      <p className="text-sm">Products will appear here once orders are placed</p>
-                    </div>
-                  )}
-                </CardContent>
+                    )}
+                  </CardContent>
+                </motion.div>
               </Card>
             </motion.div>
 
@@ -398,58 +421,62 @@ export default function Dashboard() {
             {/* Revenue Trend */}
             <motion.div variants={itemVariant} className="col-span-3">
               <Card className="border-slate-500 shadow-sm overflow-hidden">
-                <CardHeader className="bg-gradient-to-br from-blue-50 to-indigo-50 pb-4">
-                  <div className="flex items-center gap-2">
-                    <motion.div
-                      animate={{ y: [0, -3, 0] }}
-                      transition={{ duration: 1.8, repeat: Infinity, ease: "easeInOut" }}
-                    >
-                      <TrendingUp className="w-5 h-5 text-blue-600" />
-                    </motion.div>
-                    <CardTitle>Revenue Chart</CardTitle>
-                  </div>
-                  <CardDescription>Monthly revenue growth</CardDescription>
-                </CardHeader>
+                <motion.div variants={titleVariant}>
+                  <CardHeader className="bg-gradient-to-br from-blue-50 to-indigo-50 pb-4">
+                    <div className="flex items-center gap-2">
+                      <motion.div
+                        animate={{ y: [0, -3, 0] }}
+                        transition={{ duration: 1.8, repeat: Infinity, ease: "easeInOut" }}
+                      >
+                        <TrendingUp className="w-5 h-5 text-blue-600" />
+                      </motion.div>
+                      <CardTitle>Revenue Chart</CardTitle>
+                    </div>
+                    <CardDescription>Monthly revenue growth</CardDescription>
+                  </CardHeader>
+                </motion.div>
 
-                <CardContent className="pt-6">
-                  <div className="h-[250px] w-full mt-2">
-                    <ResponsiveContainer width="100%" height="100%">
-                      <AreaChart data={performanceData} margin={{ top: 10, right: 10, left: 10, bottom: 0 }}>
-                        <defs>
-                          <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
-                            <stop offset="5%" stopColor="#2563eb" stopOpacity={0.35} />
-                            <stop offset="95%" stopColor="#2563eb" stopOpacity={0} />
-                          </linearGradient>
-                        </defs>
-                        <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
-                        <XAxis dataKey="month" stroke="#94a3b8" fontSize={11} tickLine={false} axisLine={false} />
-                        <YAxis stroke="#94a3b8" fontSize={11} tickLine={false} axisLine={false} tickFormatter={(v) => `₹${v.toLocaleString()}`} />
-                        <Tooltip
-                          content={({ active, payload }) => {
-                            if (active && payload && payload.length && payload[0].payload) {
-                              return (
-                                <div className="bg-white px-3 py-2 rounded-lg shadow-lg border border-slate-200">
-                                  <p className="text-xs font-medium text-slate-600">{payload[0].payload.month}</p>
-                                  <p className="text-sm font-bold text-blue-600">₹{payload[0].value.toLocaleString()}</p>
-                                </div>
-                              );
-                            }
-                            return null;
-                          }}
-                        />
-                        <Area
-                          type="monotone"
-                          dataKey="revenue"
-                          stroke="#2563eb"
-                          strokeWidth={3}
-                          fill="url(#colorRevenue)"
-                          animationDuration={2000}
-                          animationEasing="ease-in-out"
-                        />
-                      </AreaChart>
-                    </ResponsiveContainer>
-                  </div>
-                </CardContent>
+                <motion.div variants={contentVariant}>
+                  <CardContent className="pt-6">
+                    <div className="h-[250px] w-full mt-2">
+                      <ResponsiveContainer width="100%" height="100%">
+                        <AreaChart key={chartKey} data={performanceData} margin={{ top: 10, right: 10, left: 10, bottom: 0 }}>
+                          <defs>
+                            <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
+                              <stop offset="5%" stopColor="#2563eb" stopOpacity={0.35} />
+                              <stop offset="95%" stopColor="#2563eb" stopOpacity={0} />
+                            </linearGradient>
+                          </defs>
+                          <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
+                          <XAxis dataKey="month" stroke="#94a3b8" fontSize={11} tickLine={false} axisLine={false} />
+                          <YAxis stroke="#94a3b8" fontSize={11} tickLine={false} axisLine={false} tickFormatter={(v) => `₹${v.toLocaleString()}`} />
+                          <Tooltip
+                            content={({ active, payload }) => {
+                              if (active && payload && payload.length && payload[0].payload) {
+                                return (
+                                  <div className="bg-white px-3 py-2 rounded-lg shadow-lg border border-slate-200">
+                                    <p className="text-xs font-medium text-slate-600">{payload[0].payload.month}</p>
+                                    <p className="text-sm font-bold text-blue-600">₹{payload[0].value.toLocaleString()}</p>
+                                  </div>
+                                );
+                              }
+                              return null;
+                            }}
+                          />
+                          <Area
+                            type="monotone"
+                            dataKey="revenue"
+                            stroke="#2563eb"
+                            strokeWidth={3}
+                            fill="url(#colorRevenue)"
+                            animationDuration={2000}
+                            animationEasing="ease-in-out"
+                          />
+                        </AreaChart>
+                      </ResponsiveContainer>
+                    </div>
+                  </CardContent>
+                </motion.div>
               </Card>
             </motion.div>
 
