@@ -21,9 +21,9 @@ export const suppliers = pgTable("suppliers", {
   phone: text("phone"),
   email: text("email"),
   address: text("address"),
-  gstin: text("gstin"), // Added for e-Way bill
-  state: text("state"), // Added for e-Way bill
-  city: text("city"), // Added for e-Way bill
+  gstin: text("gstin"),
+  state: text("state"),
+  city: text("city"),
   active: boolean("active").default(true),
 });
 
@@ -71,28 +71,14 @@ export const orders = pgTable("orders", {
   dcNo: text("dc_no"), // Delivery Challan Number
   discount: decimal("discount").default("0"),
   discountPercent: decimal("discount_percent").default("0"),
+  cgstPercent: decimal("cgst_percent").default("9.0"),
+  sgstPercent: decimal("sgst_percent").default("9.0"),
   bankName: text("bank_name"),
   bankBranch: text("bank_branch"),
   accountNo: text("account_no"),
   ifscCode: text("ifsc_code"),
   paymentTerms: text("payment_terms"),
   warrantyPeriod: text("warranty_period"),
-  eWayBillNo: text("eway_bill_no"),
-  modeOfTransport: text("mode_of_transport"),
-  dispatchedFrom: text("dispatched_from"),
-  placeOfSupply: text("place_of_supply"),
-  // E-Way Bill Fields
-  vehicleNo: text("vehicle_no"),
-  transporterGstin: text("transporter_gstin"),
-  transportMode: text("transport_mode"),
-  hsnCode: text("hsn_code"),
-  placeOfDispatch: text("place_of_dispatch"),
-  documentNo: text("document_no"),
-  transactionType: text("transaction_type"),
-  transportationReason: text("transportation_reason"),
-  fromLocation: text("from_location"),
-  enteredBy: text("entered_by"),
-  toLocation: text("to_location"),
   createdBy: integer("created_by").references(() => users.id),
   createdAt: timestamp("created_at").defaultNow(),
 });

@@ -71,6 +71,28 @@ export function Sidebar() {
         })}
       </nav>
 
+      <div className="px-4 pb-2">
+        <a
+          href="https://ewaybillgst.gov.in/login.aspx"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="relative flex items-center justify-center w-full py-3 rounded-xl border border-slate-700/50 bg-slate-800/40 overflow-hidden group hover:border-slate-600 transition-all duration-300 hover:shadow-[0_0_20px_-10px_rgba(16,185,129,0.3)]"
+        >
+          {/* Continuous elegant pulsing background */}
+          <div className="absolute inset-0 bg-gradient-to-r from-emerald-500/10 via-teal-500/10 to-cyan-500/10 animate-pulse opacity-70 group-hover:opacity-100 transition-opacity"></div>
+
+          {/* Static subtle top highlight */}
+          <div className="absolute top-0 inset-x-0 h-[1px] bg-gradient-to-r from-transparent via-emerald-400/30 to-transparent"></div>
+
+          <div className="relative z-10 flex items-center gap-2">
+            <Truck className="w-4 h-4 text-emerald-400 group-hover:text-emerald-300 transition-colors" />
+            <span className="font-medium tracking-wide text-sm bg-gradient-to-r from-slate-200 via-white to-slate-200 bg-clip-text text-transparent group-hover:from-emerald-200 group-hover:via-white group-hover:to-emerald-200 transition-all duration-300">
+              Generate E-way Bill
+            </span>
+          </div>
+        </a>
+      </div>
+
       <div className="px-4 pb-4">
         <a
           href="https://uniqpack.net"

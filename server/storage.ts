@@ -206,12 +206,9 @@ export class DatabaseStorage implements IStorage {
   async updateOrderDetails(id: number, details: any): Promise<Order> {
     const allowedFields = [
       'invoiceNo', 'poNo', 'poDate', 'dcNo', 'discount', 'discountPercent',
+      'cgstPercent', 'sgstPercent',
       'bankName', 'bankBranch', 'accountNo', 'ifscCode', 'paymentTerms',
-      'warrantyPeriod', 'eWayBillNo', 'modeOfTransport', 'dispatchedFrom',
-      'placeOfSupply', 'paymentStatus', 'deliveryStatus', 'amountPaid',
-      'vehicleNo', 'transporterGstin', 'transportMode', 'hsnCode',
-      'placeOfDispatch', 'documentNo', 'transactionType', 'transportationReason',
-      'fromLocation', 'enteredBy', 'toLocation',
+      'warrantyPeriod', 'paymentStatus', 'deliveryStatus', 'amountPaid',
     ];
 
     const updateData: any = {};

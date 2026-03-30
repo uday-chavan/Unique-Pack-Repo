@@ -66,8 +66,10 @@ Preferred communication style: Simple, everyday language.
 
 ### PDF Generation & Documents
 - **Invoice Generation**: Orders page generates tax invoices with GST details, line items, and payment terms using html2canvas and jsPDF
-- **e-Way Bill Generation**: Alongside invoices, the system now generates GST e-Way bills with:
-  - E-Way Bill No (generated from order ID)
+- **Tax Invoice Generation**: The system generates professional GST Tax Invoices with:
+  - Dynamic GST calculations (CGST/SGST)
+  - Company PAN and IEC details
+  - Bank details and terms & conditions
   - Valid dates (auto-calculated as 48-hour validity)
   - Part A: Supplier, Customer, and shipment details
   - Part B: Vehicle/transport information

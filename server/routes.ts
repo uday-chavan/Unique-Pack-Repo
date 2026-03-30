@@ -84,16 +84,16 @@ export async function registerRoutes(
       const validated = api.machines.update.input.parse(req.body);
       
       const cleanedData = { ...validated };
-      if ('purchasePrice' in cleanedData && cleanedData.purchasePrice === '') {
+      if ('purchasePrice' in cleanedData && cleanedData.purchasePrice === null) {
         delete cleanedData.purchasePrice;
       }
-      if ('sellingPrice' in cleanedData && cleanedData.sellingPrice === '') {
+      if ('sellingPrice' in cleanedData && cleanedData.sellingPrice === null) {
         delete cleanedData.sellingPrice;
       }
-      if ('quantity' in cleanedData && (cleanedData.quantity === '' || cleanedData.quantity === null)) {
+      if ('quantity' in cleanedData && cleanedData.quantity === null) {
         delete cleanedData.quantity;
       }
-      if ('warrantyMonths' in cleanedData && cleanedData.warrantyMonths === '') {
+      if ('warrantyMonths' in cleanedData && cleanedData.warrantyMonths === null) {
         delete cleanedData.warrantyMonths;
       }
       
@@ -263,7 +263,7 @@ export async function registerRoutes(
 
   app.post(api.orders.create.path, async (req, res) => {
     if (!req.isAuthenticated()) return res.sendStatus(401);
-    const { customerId, items, poNo, poDate } = req.body;
+    const { customerId, items, poNo, poDate, cgstPercent, sgstPercent } = req.body;
     
     let total = 0;
     const orderItemsWithPrices = [];
@@ -285,6 +285,8 @@ export async function registerRoutes(
       deliveryStatus: 'pending',
       poNo,
       poDate: poDate ? new Date(poDate) : null,
+      cgstPercent: cgstPercent ? cgstPercent.toString() : "9.0",
+      sgstPercent: sgstPercent ? sgstPercent.toString() : "9.0",
       createdBy: req.user!.id
     }, orderItemsWithPrices);
 

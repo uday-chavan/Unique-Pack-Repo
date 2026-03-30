@@ -127,7 +127,7 @@ export function useOrders() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [api.orders.list.path] });
-      toast({ title: "Details Saved", description: "Invoice and e-Way bill details have been saved successfully." });
+      toast({ title: "Details Saved", description: "Invoice details have been saved successfully." });
     },
     onError: (error) => {
       toast({ variant: "destructive", title: "Save Failed", description: error.message });

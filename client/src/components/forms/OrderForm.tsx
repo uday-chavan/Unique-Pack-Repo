@@ -57,6 +57,8 @@ const createOrderSchema = z.object({
   customerId: z.coerce.number().min(1, "Customer is required"),
   poNo: z.string().optional(),
   poDate: z.string().optional(),
+  cgstPercent: z.coerce.number().min(0).default(9.0),
+  sgstPercent: z.coerce.number().min(0).default(9.0),
   items: z
     .array(
       z.object({
@@ -87,6 +89,8 @@ export function OrderForm({ onSubmit, isLoading }: OrderFormProps) {
     resolver: zodResolver(createOrderSchema),
     defaultValues: {
       items: [{ machineId: 0, quantity: 1 }],
+      cgstPercent: 9.0,
+      sgstPercent: 9.0,
     },
   });
 
@@ -96,11 +100,20 @@ export function OrderForm({ onSubmit, isLoading }: OrderFormProps) {
   });
 
   const watchedItems = form.watch("items");
-  const calculateTotal = () => {
+  const calculateSubtotal = () => {
     return watchedItems.reduce((acc, item) => {
       const machine = orderableMachines.find((m) => m.id === Number(item.machineId));
       return acc + (machine ? Number(machine.sellingPrice) * item.quantity : 0);
     }, 0);
+  };
+
+  const cgstPercent = form.watch("cgstPercent");
+  const sgstPercent = form.watch("sgstPercent");
+
+  const calculateTotal = () => {
+    const subtotal = calculateSubtotal();
+    const gstMultiplier = 1 + (Number(cgstPercent || 0) + Number(sgstPercent || 0)) / 100;
+    return subtotal * gstMultiplier;
   };
 
   const handleFormSubmit = (data: CreateOrderFormValues) => {
@@ -181,6 +194,35 @@ export function OrderForm({ onSubmit, isLoading }: OrderFormProps) {
                   <FormLabel>PO Date</FormLabel>
                   <FormControl>
                     <Input type="date" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <FormField
+              control={form.control}
+              name="cgstPercent"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>CGST %</FormLabel>
+                  <FormControl>
+                    <Input type="number" step="0.5" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="sgstPercent"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>SGST %</FormLabel>
+                  <FormControl>
+                    <Input type="number" step="0.5" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -288,20 +330,28 @@ export function OrderForm({ onSubmit, isLoading }: OrderFormProps) {
             ))}
           </div>
 
-          <div className="flex items-center justify-between border-t pt-4">
-            <div className="text-sm">
-              <span className="text-muted-foreground">Estimated Total:</span>
-              <span className="ml-2 text-lg font-bold text-primary">
-                ₹{calculateTotal().toLocaleString("en-IN")}
+          <div className="flex flex-col border-t pt-4 space-y-2">
+            <div className="flex items-center justify-between text-sm">
+              <span className="text-muted-foreground">Subtotal:</span>
+              <span className="font-medium">
+                ₹{calculateSubtotal().toLocaleString("en-IN")}
               </span>
             </div>
-            <Button
-              type="submit"
-              disabled={isLoading}
-              className="bg-primary hover:bg-primary/90"
-            >
-              {isLoading ? "Creating..." : "Create Order"}
-            </Button>
+            <div className="flex items-center justify-between">
+              <div className="text-sm">
+                <span className="text-muted-foreground">Estimated Total (incl. GST):</span>
+                <span className="ml-2 text-lg font-bold text-primary">
+                  ₹{calculateTotal().toLocaleString("en-IN")}
+                </span>
+              </div>
+              <Button
+                type="submit"
+                disabled={isLoading}
+                className="bg-primary hover:bg-primary/90"
+              >
+                {isLoading ? "Creating..." : "Create Order"}
+              </Button>
+            </div>
           </div>
         </form>
       </Form>
